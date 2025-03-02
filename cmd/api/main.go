@@ -2,6 +2,8 @@ package main
 
 import (
 	"VoizyServer/internal/database"
+	authHandlers "VoizyServer/internal/handlers/auth"
+	userHandlers "VoizyServer/internal/handlers/users"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,10 +21,13 @@ func main() {
 	defer database.RDB.Close()
 
 	// USERS
-	http.HandleFunc("/users/create", nil)
+	http.HandleFunc("/users/create", userHandlers.CreateUserHandler)
+	http.HandleFunc("/users/login", authHandlers.LoginHandler)
+	http.HandleFunc("/users/get", userHandlers.GetUserHandler)
+	http.HandleFunc("/users/profile", userHandlers.GetProfileHandler)
 
 	// POSTS
-	http.HandleFunc("/posts/create", nil)
+	//http.HandleFunc("/posts/create", nil)
 
 	fmt.Println("Server running on localhost:9295")
 	if err := http.ListenAndServe(":9295", nil); err != nil {

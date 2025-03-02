@@ -56,7 +56,7 @@ func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error)
 
 	currentTime := time.Now().UTC()
 	userQuery := `INSERT INTO users (email, api_key, salt, password_hash, username, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	userResult, err := database.DB.Exec(userQuery, req.Email, apiKey, salt, hashedPassword, req.Username, currentTime, currentTime)
+	userResult, err := database.DB.Exec(userQuery, req.Email, apiKey.Key, salt, hashedPassword, req.Username, currentTime, currentTime)
 	if err != nil {
 		log.Println("CreateUserHandler - DB error: ", err)
 		return models.CreateUserResponse{}, err

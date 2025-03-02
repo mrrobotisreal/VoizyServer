@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var DB *sql.DB
@@ -21,7 +23,7 @@ func InitMySQL() error {
 	}
 
 	if err := createTables(); err != nil {
-		fmt.Println("creatTables error occurred: ", err)
+		fmt.Println("createTables error occurred: ", err)
 		return err
 	}
 
@@ -115,7 +117,7 @@ func createTables() error {
 
 	// Groups
 	groupsTable := `
-	CREATE TABLE IF NOT EXISTS groups (
+	CREATE TABLE IF NOT EXISTS groups_table (
 		group_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
 		name        VARCHAR(255) NOT NULL,
 		description TEXT,
@@ -132,7 +134,7 @@ func createTables() error {
 		user_id         BIGINT NOT NULL,
 		role            ENUM('member','moderator','admin') NOT NULL DEFAULT 'member',
 		joined_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (group_id) REFERENCES groups(group_id) ON DELETE CASCADE,
+		FOREIGN KEY (group_id) REFERENCES groups_table(group_id) ON DELETE CASCADE,
 		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 	);`
 
