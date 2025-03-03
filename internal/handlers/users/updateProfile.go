@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func UpdateUserProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +64,24 @@ func updateUserProfile(profileID int64, req map[string]interface{}) (models.Upda
 		}
 		if val == nil {
 			setClauses = append(setClauses, fmt.Sprintf("%s = NULL", colName))
+		} else if key == "birth_date" && val != nil {
+			strVal, ok := val.(string)
+			if !ok {
+				log.Println("birth_date must be a string in YYYY-MM-DD format")
+				return models.UpdateUserProfileResponse{
+					IsUpdateSuccessful: false,
+				}, fmt.Errorf("birth_date must be a string in YYYY-MM-DD format")
+			}
+			t, err := time.Parse("2025-03-02", strVal)
+			if err != nil {
+				log.Println("Invalid date format (YYYY-MM-DD)")
+				return models.UpdateUserProfileResponse{
+					IsUpdateSuccessful: false,
+				}, fmt.Errorf("invalid date format (YYYY-MM-DD)")
+			}
+			setClauses = append(setClauses, "birth_date = ?")
+			val = t.Format("2025-03-02")
+			args = append(args, val)
 		} else {
 			setClauses = append(setClauses, fmt.Sprintf("%s = ?", colName))
 			args = append(args, val)
