@@ -42,6 +42,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Track successful Login event
+	go util.TrackEvent(response.UserID, "login", "", nil, nil)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
