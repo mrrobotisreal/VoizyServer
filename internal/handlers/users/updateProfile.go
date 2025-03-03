@@ -46,12 +46,12 @@ func UpdateUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 func updateUserProfile(profileID int64, req map[string]interface{}) (models.UpdateUserProfileResponse, error) {
 	validColumns := map[string]string{
-		"first_name":        "first_name",
-		"last_name":         "last_name",
-		"preferred_name":    "preferred_name",
-		"birth_date":        "birth_date",
-		"city_of_residence": "city_of_residence",
-		"place_of_work":     "place_of_work",
+		"firstName":       "first_name",
+		"lastName":        "last_name",
+		"preferredName":   "preferred_name",
+		"birthDate":       "birth_date",
+		"cityOfResidence": "city_of_residence",
+		"placeOfWork":     "place_of_work",
 	}
 	setClauses := []string{}
 	args := []interface{}{}
