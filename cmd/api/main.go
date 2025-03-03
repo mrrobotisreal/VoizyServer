@@ -24,7 +24,9 @@ func main() {
 	http.HandleFunc("/users/create", userHandlers.CreateUserHandler)
 	http.HandleFunc("/users/login", authHandlers.LoginHandler)
 	http.HandleFunc("/users/get", userHandlers.GetUserHandler)
-	http.HandleFunc("/users/profile", userHandlers.GetProfileHandler)
+	http.HandleFunc("/users/update", userHandlers.UpdateUserHandler)
+	http.HandleFunc("/users/profile/get", userHandlers.GetProfileHandler)
+	http.HandleFunc("/users/profile/update", userHandlers.GetProfileHandler)
 
 	// POSTS
 	//http.HandleFunc("/posts/create", nil)
