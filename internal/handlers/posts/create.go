@@ -112,6 +112,33 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 }
 
 func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
+	if !req.IsPoll {
+		query := `
+			INSERT INTO posts (
+				user_id,
+				content_text,
+				location_name,
+				location_lat,
+				location_lng,
+				is_poll
+			)
+			VALUES (?, ?, ?, ?, ?, ?)
+		`
+		result, err := tx.Exec(query,
+			req.UserID,
+			req.ContentText,
+			req.LocationName,
+			req.LocationLat,
+			req.LocationLong,
+			false,
+		)
+		if err != nil {
+			log.Println("Error inserting into posts: ", err)
+			return 0, err
+		}
+		return result.LastInsertId()
+	}
+
 	query := `
 		INSERT INTO posts (
 			user_id, content_text, location_name, location_lat, location_lng,
