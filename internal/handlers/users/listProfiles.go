@@ -33,7 +33,7 @@ func listUserProfiles() (models.ListUsersResponse, error) {
 			IFNULL(first_name, ''),
 			IFNULL(last_name, ''),
 			IFNULL(preferred_name, ''),
-			IFNULL(birth_date, ''),
+			birth_date,
 			IFNULL(city_of_residence, ''),
 			IFNULL(place_of_work, ''),
 			date_joined
