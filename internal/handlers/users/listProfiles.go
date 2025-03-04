@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,7 +26,7 @@ func ListUserProfilesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func listUserProfiles() (models.ListUsersResponse, error) {
+func listUserProfiles() (models.ListProfilesResponse, error) {
 	query := `
 		SELECT
 			profile_id,
@@ -42,11 +43,11 @@ func listUserProfiles() (models.ListUsersResponse, error) {
 	rows, err := database.DB.Query(query)
 	if err != nil {
 		log.Println("Error executing ListUserProfiles query: ", err)
-		return models.ListUsersResponse{}, fmt.Errorf("error executing ListUserProfiles query: %w", err)
+		return models.ListProfilesResponse{}, fmt.Errorf("error executing ListUserProfiles query: %w", err)
 	}
 	defer rows.Close()
 
-	var profiles []models.UserProfile
+	var profiles []models.ListProfile
 
 	for rows.Next() {
 		var p models.UserProfile
@@ -67,15 +68,25 @@ func listUserProfiles() (models.ListUsersResponse, error) {
 			continue
 		}
 
-		profiles = append(profiles, p)
+		profiles = append(profiles, models.ListProfile{
+			UserID:          p.UserID,
+			ProfileID:       p.ProfileID,
+			FirstName:       util.SqlNullStringToPtr(p.FirstName),
+			LastName:        util.SqlNullStringToPtr(p.LastName),
+			PreferredName:   util.SqlNullStringToPtr(p.PreferredName),
+			BirthDate:       util.SqlNullTimeToPtr(p.BirthDate),
+			CityOfResidence: util.SqlNullStringToPtr(p.CityOfResidence),
+			PlaceOfWork:     util.SqlNullStringToPtr(p.PlaceOfWork),
+			DateJoined:      util.SqlNullTimeToPtr(p.DateJoined),
+		})
 	}
 
 	if err = rows.Err(); err != nil {
 		log.Println("Error iterating over rows: ", err)
-		return models.ListUsersResponse{}, fmt.Errorf("error iterating over rows: %w", err)
+		return models.ListProfilesResponse{}, fmt.Errorf("error iterating over rows: %w", err)
 	}
 
-	return models.ListUsersResponse{
+	return models.ListProfilesResponse{
 		Profiles: profiles,
 	}, nil
 }
