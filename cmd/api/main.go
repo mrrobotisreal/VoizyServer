@@ -2,7 +2,9 @@ package main
 
 import (
 	"VoizyServer/internal/database"
+	analyticsHandlers "VoizyServer/internal/handlers/analytics"
 	authHandlers "VoizyServer/internal/handlers/auth"
+	postHandlers "VoizyServer/internal/handlers/posts"
 	userHandlers "VoizyServer/internal/handlers/users"
 	"fmt"
 	"log"
@@ -26,10 +28,14 @@ func main() {
 	http.HandleFunc("/users/get", userHandlers.GetUserHandler)
 	http.HandleFunc("/users/update", userHandlers.UpdateUserHandler)
 	http.HandleFunc("/users/profile/get", userHandlers.GetProfileHandler)
+	http.HandleFunc("/users/profile/list", userHandlers.ListUserProfilesHandler) // temp handler
 	http.HandleFunc("/users/profile/update", userHandlers.UpdateUserProfileHandler)
 
 	// POSTS
-	//http.HandleFunc("/posts/create", nil)
+	http.HandleFunc("/posts/create", postHandlers.CreatePostHandler)
+
+	// ANALYTICS
+	http.HandleFunc("/analytics/track", analyticsHandlers.BatchTrackEventsHandler)
 
 	fmt.Println("Server running on localhost:9295")
 	if err := http.ListenAndServe(":9295", nil); err != nil {
