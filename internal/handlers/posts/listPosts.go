@@ -83,16 +83,16 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		SELECT
 			post_id,
 			user_id,
-			IFNULL(content_text, ''),
-			DATE_FORMAT(created_at, '%Y-%m-%d %T') AS created_at,
-			DATE_FORMAT(updated_at, '%Y-%m-%d %T') AS updated_at,
-			IFNULL(location_name, ''),
-			IFNULL(location_lat, 0),
-			IFNULL(location_lng, 0),
+			content_text,
+			created_at,
+			updated_at,
+			location_name,
+			location_lat,
+			location_lng,
 			is_poll,
-			IFNULL(poll_question, ''),
-			IFNULL(poll_duration_type, ''),
-			IFNULL(poll_duration_length, 0)
+			poll_question,
+			poll_duration_type,
+			poll_duration_length
 		FROM posts
 		WHERE user_id = ?
 		ORDER BY created_at DESC
