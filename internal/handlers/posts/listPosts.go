@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -104,6 +105,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 	defer rows.Close()
 
 	var posts []models.Post
+	var listPosts []models.ListPost
 	for rows.Next() {
 		var p models.Post
 		err := rows.Scan(
@@ -125,6 +127,20 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			continue
 		}
 		posts = append(posts, p)
+		listPosts = append(listPosts, models.ListPost{
+			PostID:             p.PostID,
+			UserID:             p.UserID,
+			ContentText:        util.SqlNullStringToPtr(p.ContentText),
+			CreatedAt:          util.SqlNullTimeToPtr(p.CreatedAt),
+			UpdatedAt:          util.SqlNullTimeToPtr(p.UpdatedAt),
+			LocationName:       util.SqlNullStringToPtr(p.LocationName),
+			LocationLat:        util.SqlNullFloat64ToPtr(p.LocationLat),
+			LocationLong:       util.SqlNullFloat64ToPtr(p.LocationLong),
+			IsPoll:             util.SqlNullBoolToPtr(p.IsPoll),
+			PollQuestion:       util.SqlNullStringToPtr(p.PollQuestion),
+			PollDurationType:   util.SqlNullStringToPtr(p.PollDurationType),
+			PollDurationLength: util.SqlNullInt64ToPtr(p.PollDurationLength),
+		})
 	}
 
 	if err = rows.Err(); err != nil {
@@ -133,7 +149,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 
 	totalPages := int64(math.Ceil(float64(totalPosts) / float64(limit)))
 	return models.ListPostsResponse{
-		Posts:      posts,
+		Posts:      listPosts,
 		Limit:      limit,
 		Page:       page,
 		TotalPosts: totalPosts,
