@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -28,6 +29,10 @@ func PutPostReactionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to put reaction to post.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(req.UserID, "reaction", "post", &req.PostID, map[string]interface{}{
+		"reaction_type": req.ReactionType,
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
