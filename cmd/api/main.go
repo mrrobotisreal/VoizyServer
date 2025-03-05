@@ -39,7 +39,7 @@ func main() {
 	http.HandleFunc("/posts/get/media", postHandlers.GetPostMediaHandler)
 	http.HandleFunc("/posts/reactions/put", postHandlers.PutPostReactionHandler)
 	http.HandleFunc("/posts/comments/put", postHandlers.PutCommentHandler)
-	http.HandleFunc("/post/comments/list", postHandlers.ListPostCommentsHandler)
+	http.HandleFunc("/posts/comments/list", postHandlers.ListPostCommentsHandler)
 
 	// ANALYTICS
 	http.HandleFunc("/analytics/track", analyticsHandlers.BatchTrackEventsHandler)
