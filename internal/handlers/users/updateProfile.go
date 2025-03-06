@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -17,14 +18,24 @@ func UpdateUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profileIDString := r.URL.Query().Get("id")
-	if profileIDString == "" {
+	userIDString := r.URL.Query().Get("id")
+	if userIDString == "" {
 		http.Error(w, "Missing required param 'id'.", http.StatusBadRequest)
+		return
+	}
+	userID, err := strconv.ParseInt(userIDString, 10, 64)
+	if err != nil {
+		http.Error(w, "Error parsing 'id'.", http.StatusInternalServerError)
+		return
+	}
+	profileIDString := r.URL.Query().Get("profile_id")
+	if profileIDString == "" {
+		http.Error(w, "Missing required param 'profile_id'.", http.StatusBadRequest)
 		return
 	}
 	profileID, err := strconv.ParseInt(profileIDString, 10, 64)
 	if err != nil {
-		http.Error(w, "Error parsing 'id'.", http.StatusInternalServerError)
+		http.Error(w, "Error parsing 'profile_id'.", http.StatusInternalServerError)
 		return
 	}
 
@@ -40,6 +51,8 @@ func UpdateUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error updating user profile.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(userID, "update_profile", "user_profile", &profileID, req)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
