@@ -39,3 +39,10 @@ func SqlNullFloat64ToPtr(nf sql.NullFloat64) *float64 {
 	}
 	return nil
 }
+
+func SqlNullMapToPtr(nm sql.Null[map[string]interface{}]) *map[string]interface{} {
+	if nm.Valid {
+		return &nm.V
+	}
+	return nil
+}

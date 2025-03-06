@@ -43,6 +43,8 @@ func main() {
 
 	// ANALYTICS
 	http.HandleFunc("/analytics/track", analyticsHandlers.BatchTrackEventsHandler)
+	http.HandleFunc("/analytics/events/list", analyticsHandlers.ListEventsHandler)
+	http.HandleFunc("/analytics/stats/list", analyticsHandlers.ListStatsHandler)
 
 	fmt.Println("Server running on localhost:9295")
 	if err := http.ListenAndServe(":9295", nil); err != nil {
