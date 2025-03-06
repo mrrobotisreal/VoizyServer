@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -28,6 +29,10 @@ func PutCommentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to put comment on post.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(req.UserID, "comment_on_post", "comment", &response.CommentID, map[string]interface{}{
+		"postID": req.PostID,
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

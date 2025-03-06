@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
+	"VoizyServer/internal/util"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -32,6 +33,8 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error creating post (%v).", err), http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(req.UserID, "create_post", "post", &response.PostID, nil)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

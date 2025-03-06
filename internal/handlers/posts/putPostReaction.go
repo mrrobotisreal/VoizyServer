@@ -30,8 +30,9 @@ func PutPostReactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go util.TrackEvent(req.UserID, "reaction", "post", &req.PostID, map[string]interface{}{
+	go util.TrackEvent(req.UserID, "react_to_post", "post_reaction", &response.ReactionID, map[string]interface{}{
 		"reaction_type": req.ReactionType,
+		"post_id":       req.PostID,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
