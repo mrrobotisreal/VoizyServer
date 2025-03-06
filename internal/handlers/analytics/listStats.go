@@ -116,7 +116,7 @@ func listStats(userID int64, eventType, objectType string, startTime, endTime ti
 
 	query := fmt.Sprintf(`
 		SELECT
-			%s AS group_value
+			%s AS group_value,
 			COUNT(*) AS count
 		FROM analytics_events
 		WHERE %s
