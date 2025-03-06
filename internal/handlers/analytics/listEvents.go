@@ -120,7 +120,7 @@ func listEvents(userID int64, eventType, objectType string, startTime, endTime t
 	whereSQL := strings.Join(whereClauses, " AND ")
 
 	var totalEvents int64
-	countQuery := fmt.Sprintf(`SELECT (*) FROM analytics_events WHERE %s`, whereSQL)
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM analytics_events WHERE %s`, whereSQL)
 	if err := database.DB.QueryRow(countQuery, args...).Scan(&totalEvents); err != nil {
 		return models.ListEventsResponse{}, err
 	}
