@@ -31,6 +31,14 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go util.TrackEvent(response.UserID, "create_account", "user", &response.UserID, map[string]interface{}{
+		"email":    response.Email,
+		"username": response.Username,
+	})
+	go util.TrackEvent(response.UserID, "create_profile", "user_profile", &response.ProfileID, map[string]interface{}{
+		"preferredName": response.PreferredName,
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
