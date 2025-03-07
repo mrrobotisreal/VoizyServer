@@ -38,6 +38,8 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go util.TrackEvent(userID, "view_profile", "user_profile", &response.ProfileID, nil)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }

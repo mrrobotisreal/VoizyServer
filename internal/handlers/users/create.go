@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -44,6 +45,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error) {
+	// TODO: update this to use Tx and do rollbacks upon any failures
 	salt, err := util.GenerateSalt(10)
 	if err != nil {
 		log.Println("Error generating salt: ", err)
@@ -71,6 +73,30 @@ func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error)
 	}
 	userID, _ := userResult.LastInsertId()
 
+	now := currentTime
+	expiresAt := now.AddDate(0, 0, 90)
+	apiKeyQuery := `
+		INSERT INTO api_keys (
+			user_id,
+			api_key,
+			created_at,
+			expires_at,
+			updated_at
+		)
+		VALUES (?, ?, ?, ?, ?)
+	`
+	_, err = database.DB.Exec(apiKeyQuery, userID, apiKey.Key, currentTime, expiresAt, currentTime)
+	if err != nil {
+		log.Println("InsertAPIKey - DB error: ", err) // TODO: update all these logs to follow format of rest of package
+		return models.CreateUserResponse{}, err
+	}
+
+	token, err := util.GenerateAndStoreJWT(strconv.FormatInt(userID, 10), "always") // TODO: implement sessionOptions
+	if err != nil {
+		log.Println("GenerateJWT error: ", err)
+		return models.CreateUserResponse{}, err
+	}
+
 	profileQuery := `INSERT INTO user_profiles (user_id, first_name, last_name, preferred_name, birth_date, city_of_residence, place_of_work, date_joined) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 	profileResult, err := database.DB.Exec(profileQuery, userID, req.PreferredName, nil, req.PreferredName, nil, nil, nil, currentTime)
 	if err != nil {
@@ -90,6 +116,7 @@ func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error)
 		UserID:        userID,
 		ProfileID:     profileID,
 		APIKey:        apiKey.Key,
+		Token:         token,
 		Email:         req.Email,
 		Username:      req.Username,
 		PreferredName: req.PreferredName,

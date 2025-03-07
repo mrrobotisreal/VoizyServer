@@ -43,11 +43,15 @@ func GenerateSecureAPIKey() (*models.APIKey, error) {
 
 	key := fmt.Sprintf("sk_%s", hex.EncodeToString(randomBytes))
 
+	currentTime := time.Now()
+	expiresAt := time.Now().Add(time.Duration(keyRotationDays) * 24 * time.Hour)
+
 	apiKey := &models.APIKey{
-		Key:       key,
-		Created:   time.Now(),
-		LastUsed:  time.Now(),
-		ExpiresAt: time.Now().Add(time.Duration(keyRotationDays) * 24 * time.Hour),
+		Key:        key,
+		CreatedAt:  currentTime,
+		LastUsedAt: currentTime,
+		ExpiresAt:  expiresAt,
+		UpdatedAt:  currentTime,
 	}
 
 	return apiKey, nil
@@ -62,11 +66,11 @@ func ValidateAPIKey(apiKey *models.APIKey) error {
 		return errors.New("api key has expired")
 	}
 
-	apiKey.LastUsed = time.Now()
+	apiKey.LastUsedAt = time.Now()
 
 	return nil
 }
 
 func IsKeyRotationNeeded(apiKey *models.APIKey) bool {
-	return time.Now().After(apiKey.Created.Add(time.Duration(keyRotationDays) * 24 * time.Hour))
+	return time.Now().After(apiKey.CreatedAt.Add(time.Duration(keyRotationDays) * 24 * time.Hour))
 }

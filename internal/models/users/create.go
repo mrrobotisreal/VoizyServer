@@ -13,6 +13,7 @@ type CreateUserResponse struct {
 	UserID          int64     `json:"userID"`
 	ProfileID       int64     `json:"profileID"`
 	APIKey          string    `json:"apiKey"`
+	Token           string    `json:"token"`
 	Email           string    `json:"email"`
 	Username        string    `json:"username"`
 	PreferredName   string    `json:"preferredName"`

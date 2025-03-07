@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,12 +94,19 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 		return models.LoginResponse{}, err
 	}
 
+	log.Println("What is userID? ", user.UserID)
 	isPasswordCorrect := util.CheckPasswordHash(req.Password+user.Salt, user.PasswordHash)
+	token, err := util.GenerateAndStoreJWT(strconv.FormatInt(user.UserID, 10), "always") // TODO: implement sessionOptions
+	if err != nil {
+		log.Println("Failed to generate JWT: ", err)
+		return models.LoginResponse{}, err
+	}
 
 	return models.LoginResponse{
 		IsPasswordCorrect: isPasswordCorrect,
 		UserID:            user.UserID,
 		APIKey:            user.APIKey,
+		Token:             token,
 		Email:             user.Email,
 		Username:          user.Username,
 		CreatedAt:         user.CreatedAt,

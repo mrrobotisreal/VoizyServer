@@ -23,6 +23,7 @@ type LoginResponse struct {
 	IsPasswordCorrect bool      `json:"isPasswordCorrect"`
 	UserID            int64     `json:"userID"`
 	APIKey            string    `json:"apiKey"`
+	Token             string    `json:"token"`
 	Email             string    `json:"email"`
 	Username          string    `json:"username"`
 	CreatedAt         time.Time `json:"createdAt"`

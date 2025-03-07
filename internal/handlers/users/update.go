@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -39,6 +40,10 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error updating user.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(userID, "update_user", "user", &userID, map[string]interface{}{
+		"username": req.Username,
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

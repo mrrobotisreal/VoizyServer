@@ -5,8 +5,8 @@ import "time"
 type contextKey string
 
 const (
-	UsernameContextKey contextKey = "username"
-	APIKeyContextKey   contextKey = "apiKey"
+	UserIDContextKey contextKey = "userID"
+	APIKeyContextKey contextKey = "apiKey"
 )
 
 type ErrorResponse struct {
@@ -15,8 +15,9 @@ type ErrorResponse struct {
 }
 
 type APIKey struct {
-	Key       string    `bson:"key" json:"key"`
-	Created   time.Time `bson:"created" json:"created"`
-	LastUsed  time.Time `bson:"lastUsed" json:"lastUsed"`
-	ExpiresAt time.Time `bson:"expiresAt" json:"expiresAt"`
+	Key        string    `json:"key"`
+	CreatedAt  time.Time `json:"createdAt"`
+	LastUsedAt time.Time `json:"lastUsedAt"`
+	ExpiresAt  time.Time `json:"expiresAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"log"
 	"time"
 )
 
@@ -13,7 +14,7 @@ func GetJWTSecret() string {
 	return jwtSecretKey
 }
 
-func GenerateAndStoreJWT(username, sessionOption string) (string, error) {
+func GenerateAndStoreJWT(userID string, sessionOption string) (string, error) {
 	var expirationTime time.Time
 
 	switch sessionOption {
@@ -31,10 +32,11 @@ func GenerateAndStoreJWT(username, sessionOption string) (string, error) {
 		return "", errors.New("invalid session option")
 	}
 
+	log.Println("Claims userID is: ", userID)
 	claims := jwt.MapClaims{
-		"username": username,
-		"exp":      expirationTime.Unix(),
-		"iat":      time.Now().Unix(),
+		"userID": userID,
+		"exp":    expirationTime.Unix(),
+		"iat":    time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
