@@ -33,6 +33,17 @@ func InitMySQL() error {
 
 func createTables() error {
 	// Users and profiles
+	apiKeysTable := `
+	CREATE TABLE IF NOT EXISTS api_keys (
+		api_key_id		  BIGINT AUTO_INCREMENT PRIMARY KEY,
+		user_id			  BIGINT NOT NULL,
+		api_key			  VARCHAR(255) NOT NULL UNIQUE,
+		created_at		  DATETIME	   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		expires_at		  DATETIME	   NOT NULL,
+		updated_at		  DATETIME	   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	);
+	`
+
 	usersTable := `
 	CREATE TABLE IF NOT EXISTS users (
 		user_id           BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -143,7 +154,7 @@ func createTables() error {
 	CREATE TABLE IF NOT EXISTS posts (
 		post_id            BIGINT AUTO_INCREMENT PRIMARY KEY,
 		user_id            BIGINT NOT NULL,
-		original_post_id   BIGINT NULL,
+		original_post_id   BIGINT NULL DEFAULT NULL,
 		content_text       TEXT,
 		created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -325,6 +336,9 @@ func createTables() error {
 		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 	);`
 
+	if _, err := DB.Exec(apiKeysTable); err != nil {
+		return err
+	}
 	if _, err := DB.Exec(usersTable); err != nil {
 		return err
 	}

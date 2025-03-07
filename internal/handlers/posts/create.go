@@ -35,8 +35,8 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go util.TrackEvent(req.UserID, "create_post", "post", &response.PostID, nil)
-	if &req.OriginalPostID != nil {
-		go util.TrackEvent(req.UserID, "share_post", "post", &req.OriginalPostID, map[string]interface{}{
+	if req.OriginalPostID != nil {
+		go util.TrackEvent(req.UserID, "share_post", "post", req.OriginalPostID, map[string]interface{}{
 			"shared_post_id": response.PostID,
 		})
 	}
@@ -72,7 +72,7 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 		}, err
 	}
 
-	if &req.OriginalPostID != nil {
+	if req.OriginalPostID != nil {
 		err = insertSharedPost(tx, req.OriginalPostID, req.UserID)
 		if err != nil {
 			tx.Rollback()
@@ -133,7 +133,7 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 
 func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 	if !req.IsPoll {
-		if &req.OriginalPostID != nil {
+		if req.OriginalPostID != nil {
 			query := `
 				INSERT INTO posts (
 					user_id,
@@ -148,7 +148,7 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 			`
 			result, err := tx.Exec(query,
 				req.UserID,
-				req.OriginalPostID,
+				*req.OriginalPostID,
 				req.ContentText,
 				req.LocationName,
 				req.LocationLat,
@@ -188,7 +188,7 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 		return result.LastInsertId()
 	}
 
-	if &req.OriginalPostID != nil {
+	if req.OriginalPostID != nil {
 		query := `
 			INSERT INTO posts (
 				user_id, original_post_id, content_text, location_name, location_lat, location_lng,
@@ -198,7 +198,7 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 		`
 		result, err := tx.Exec(query,
 			req.UserID,
-			req.OriginalPostID,
+			*req.OriginalPostID,
 			req.ContentText,
 			req.LocationName,
 			req.LocationLat,
@@ -247,7 +247,7 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 	return postID, nil
 }
 
-func insertSharedPost(tx *sql.Tx, originalPostID, userID int64) error {
+func insertSharedPost(tx *sql.Tx, originalPostID *int64, userID int64) error {
 	query := `
 		INSERT INTO post_shares (
 			post_id,
@@ -255,7 +255,7 @@ func insertSharedPost(tx *sql.Tx, originalPostID, userID int64) error {
 		)
 		VALUES (?, ?)
 	`
-	result, err := tx.Exec(query, originalPostID, userID)
+	result, err := tx.Exec(query, *originalPostID, userID)
 	if err != nil {
 		log.Println("Error inserting into post_shares: ", err)
 		return err
