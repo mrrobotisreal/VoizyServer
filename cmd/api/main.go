@@ -33,6 +33,7 @@ func main() {
 
 	// POSTS
 	http.HandleFunc("/posts/create", postHandlers.CreatePostHandler)
+	http.HandleFunc("/posts/update", postHandlers.UpdatePostHandler)
 	http.HandleFunc("/posts/list", postHandlers.ListPostsHandler)
 	http.HandleFunc("/posts/get/total", postHandlers.GetTotalPostsHandler)
 	http.HandleFunc("/posts/get/details", postHandlers.GetPostDetailsHandler)

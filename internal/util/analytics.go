@@ -40,7 +40,7 @@ func TrackEvent(userID int64, eventType, objectType string, objectID *int64, met
 
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected > 0 {
-		log.Println("TrackEvent success; total rows affected = ", rowsAffected)
+		log.Println(fmt.Sprintf("TrackEvent \"%s\" success; total rows affected = %d", eventType, rowsAffected))
 	} else {
 		log.Println("TrackEvent fail; no rows affected - rows affected = ", rowsAffected)
 	}

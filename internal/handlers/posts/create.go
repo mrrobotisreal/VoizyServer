@@ -72,14 +72,16 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 		}, err
 	}
 
-	err = insertSharedPost(tx, req.OriginalPostID, req.UserID)
-	if err != nil {
-		tx.Rollback()
-		log.Println("Failed to insert post share: ", err)
-		return models.CreatePostResponse{
-			Success: false,
-			Message: fmt.Sprintf("Failed to insert post share: %v", err),
-		}, err
+	if &req.OriginalPostID != nil {
+		err = insertSharedPost(tx, req.OriginalPostID, req.UserID)
+		if err != nil {
+			tx.Rollback()
+			log.Println("Failed to insert post share: ", err)
+			return models.CreatePostResponse{
+				Success: false,
+				Message: fmt.Sprintf("Failed to insert post share: %v", err),
+			}, err
+		}
 	}
 
 	if req.IsPoll {
@@ -131,6 +133,35 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 
 func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 	if !req.IsPoll {
+		if &req.OriginalPostID != nil {
+			query := `
+				INSERT INTO posts (
+					user_id,
+				    original_post_id,
+					content_text,
+					location_name,
+					location_lat,
+					location_lng,
+					is_poll
+				)
+				VALUES (?, ?, ?, ?, ?, ?, ?)
+			`
+			result, err := tx.Exec(query,
+				req.UserID,
+				req.OriginalPostID,
+				req.ContentText,
+				req.LocationName,
+				req.LocationLat,
+				req.LocationLong,
+				false,
+			)
+			if err != nil {
+				log.Println("Error inserting into posts: ", err)
+				return 0, err
+			}
+			return result.LastInsertId()
+		}
+
 		query := `
 			INSERT INTO posts (
 				user_id,
@@ -149,6 +180,33 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 			req.LocationLat,
 			req.LocationLong,
 			false,
+		)
+		if err != nil {
+			log.Println("Error inserting into posts: ", err)
+			return 0, err
+		}
+		return result.LastInsertId()
+	}
+
+	if &req.OriginalPostID != nil {
+		query := `
+			INSERT INTO posts (
+				user_id, original_post_id, content_text, location_name, location_lat, location_lng,
+				is_poll, poll_question, poll_duration_type, poll_duration_length
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`
+		result, err := tx.Exec(query,
+			req.UserID,
+			req.OriginalPostID,
+			req.ContentText,
+			req.LocationName,
+			req.LocationLat,
+			req.LocationLong,
+			req.IsPoll,
+			req.PollQuestion,
+			req.PollDurationType,
+			req.PollDurationLength,
 		)
 		if err != nil {
 			log.Println("Error inserting into posts: ", err)
