@@ -111,6 +111,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		err := rows.Scan(
 			&p.PostID,
 			&p.UserID,
+			&p.OriginalPostID,
 			&p.ContentText,
 			&p.CreatedAt,
 			&p.UpdatedAt,
@@ -130,6 +131,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		listPosts = append(listPosts, models.ListPost{
 			PostID:             p.PostID,
 			UserID:             p.UserID,
+			OriginalPostID:     util.SqlNullInt64ToPtr(p.OriginalPostID),
 			ContentText:        util.SqlNullStringToPtr(p.ContentText),
 			CreatedAt:          util.SqlNullTimeToPtr(p.CreatedAt),
 			UpdatedAt:          util.SqlNullTimeToPtr(p.UpdatedAt),

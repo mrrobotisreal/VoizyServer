@@ -7,6 +7,7 @@ import (
 type Post struct {
 	PostID             int64           `json:"postID"`
 	UserID             int64           `json:"userID"`
+	OriginalPostID     sql.NullInt64   `json:"originalPostID"`
 	ContentText        sql.NullString  `json:"contentText"`
 	CreatedAt          sql.NullTime    `json:"createdAt"`
 	UpdatedAt          sql.NullTime    `json:"updatedAt"`

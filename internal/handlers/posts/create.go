@@ -35,6 +35,11 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go util.TrackEvent(req.UserID, "create_post", "post", &response.PostID, nil)
+	if &req.OriginalPostID != nil {
+		go util.TrackEvent(req.UserID, "share_post", "post", &req.OriginalPostID, map[string]interface{}{
+			"shared_post_id": response.PostID,
+		})
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -64,6 +69,16 @@ func createPost(req models.CreatePostRequest) (models.CreatePostResponse, error)
 		return models.CreatePostResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to insert post: %v", err),
+		}, err
+	}
+
+	err = insertSharedPost(tx, req.OriginalPostID, req.UserID)
+	if err != nil {
+		tx.Rollback()
+		log.Println("Failed to insert post share: ", err)
+		return models.CreatePostResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to insert post share: %v", err),
 		}, err
 	}
 
@@ -172,6 +187,28 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 	}
 
 	return postID, nil
+}
+
+func insertSharedPost(tx *sql.Tx, originalPostID, userID int64) error {
+	query := `
+		INSERT INTO post_shares (
+			post_id,
+			user_id
+		)
+		VALUES (?, ?)
+	`
+	result, err := tx.Exec(query, originalPostID, userID)
+	if err != nil {
+		log.Println("Error inserting into post_shares: ", err)
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		log.Println("No rows affected in post_shares!")
+	}
+
+	return nil
 }
 
 func insertPollOptions(tx *sql.Tx, postID int64, options []string) error {
