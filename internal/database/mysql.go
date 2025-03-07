@@ -143,6 +143,7 @@ func createTables() error {
 	CREATE TABLE IF NOT EXISTS posts (
 		post_id            BIGINT AUTO_INCREMENT PRIMARY KEY,
 		user_id            BIGINT NOT NULL,
+		original_post_id   BIGINT NULL,
 		content_text       TEXT,
 		created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -154,7 +155,8 @@ func createTables() error {
 		poll_duration_type ENUM('hours','days','weeks') DEFAULT 'days',
 		poll_duration_length INT DEFAULT 1,
 		poll_end_datetime  DATETIME,
-		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+	    FOREIGN KEY (original_post_id) REFERENCES posts(post_id) ON DELETE SET NULL
 	);`
 
 	pollOptionsTable := `
