@@ -40,6 +40,7 @@ func main() {
 	http.HandleFunc("/posts/reactions/put", postHandlers.PutPostReactionHandler)
 	http.HandleFunc("/posts/comments/put", postHandlers.PutCommentHandler)
 	http.HandleFunc("/posts/comments/list", postHandlers.ListPostCommentsHandler)
+	http.HandleFunc("/posts/comments/reactions/put", postHandlers.PutCommentReactionHandler)
 
 	// ANALYTICS
 	http.HandleFunc("/analytics/track", analyticsHandlers.BatchTrackEventsHandler)
