@@ -83,6 +83,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		SELECT
 			post_id,
 			user_id,
+			original_post_id,
 			content_text,
 			created_at,
 			updated_at,
