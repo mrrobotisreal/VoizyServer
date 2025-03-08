@@ -31,6 +31,9 @@ func main() {
 	http.HandleFunc("/users/profile/get", middleware.ValidateAPIKeyMiddleware(userHandlers.GetProfileHandler))
 	http.HandleFunc("/users/profile/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListUserProfilesHandler)) // temp handler
 	http.HandleFunc("/users/profile/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateUserProfileHandler))
+	http.HandleFunc("/users/friends/create", middleware.CombinedAuthMiddleware(userHandlers.CreateFriendRequestHandler))
+	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
+	http.HandleFunc("/users/friends/list/common", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendsInCommonHandler))
 
 	// POSTS
 	http.HandleFunc("/posts/create", middleware.CombinedAuthMiddleware(postHandlers.CreatePostHandler))
