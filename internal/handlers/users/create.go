@@ -4,9 +4,9 @@ import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
 	"VoizyServer/internal/util"
-	"context"
+	//"context"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -105,12 +105,12 @@ func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error)
 	}
 	profileID, _ := profileResult.LastInsertId()
 
-	ctx := context.Background()
-	key := fmt.Sprintf("user:%d:username", userID)
-	err = database.RDB.Set(ctx, key, req.Username, 0).Err()
-	if err != nil {
-		log.Println("Redis set error: ", err)
-	}
+	//ctx := context.Background()
+	//key := fmt.Sprintf("user:%d:username", userID)
+	//err = database.RDB.Set(ctx, key, req.Username, 0).Err()
+	//if err != nil {
+	//	log.Println("Redis set error: ", err)
+	//}
 
 	return models.CreateUserResponse{
 		UserID:        userID,

@@ -18,10 +18,10 @@ func main() {
 	}
 	defer database.DB.Close()
 
-	if err := database.InitRedis(); err != nil {
-		log.Fatalf("Failed to init Redis: %v", err)
-	}
-	defer database.RDB.Close()
+	//if err := database.InitRedis(); err != nil {
+	//	log.Fatalf("Failed to init Redis: %v", err)
+	//}
+	//defer database.RDB.Close()
 
 	// USERS
 	http.HandleFunc("/users/create", userHandlers.CreateUserHandler)
@@ -40,7 +40,7 @@ func main() {
 	http.HandleFunc("/posts/update", middleware.CombinedAuthMiddleware(postHandlers.UpdatePostHandler))
 	http.HandleFunc("/posts/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostsHandler))
 	http.HandleFunc("/posts/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalPostsHandler))
-	http.HandleFunc("/posts/get/details", middleware.CombinedAuthMiddleware(postHandlers.GetPostDetailsHandler))
+	http.HandleFunc("/posts/get/details", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostDetailsHandler))
 	http.HandleFunc("/posts/get/media", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostMediaHandler))
 	http.HandleFunc("/posts/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutPostReactionHandler))
 	http.HandleFunc("/posts/comments/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentHandler))
@@ -55,8 +55,11 @@ func main() {
 	// AUTH
 	http.HandleFunc("/api/keys/insert", authHandlers.InsertApiKeyHandler)
 
-	fmt.Println("Server running on localhost:9295")
-	if err := http.ListenAndServe(":9295", nil); err != nil {
+	certFile := "/etc/letsencrypt/live/voizy.me/fullchain.pem"
+	keyFile := "/etc/letsencrypt/live/voizy.me/privkey.pem"
+
+	fmt.Println("Server running securely on localhost:443")
+	if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
 		log.Fatal(err)
 	}
 }
