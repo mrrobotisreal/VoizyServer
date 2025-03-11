@@ -157,6 +157,8 @@ func createTables() error {
 		user_id            BIGINT NOT NULL,
 		to_user_id		   BIGINT NOT NULL DEFAULT -1,
 		original_post_id   BIGINT NULL DEFAULT NULL,
+		impressions		   BIGINT NOT NULL DEFAULT 0,
+		views			   BIGINT NOT NULL DEFAULT 0,
 		content_text       TEXT,
 		created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

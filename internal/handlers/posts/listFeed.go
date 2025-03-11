@@ -5,14 +5,13 @@ import (
 	models "VoizyServer/internal/models/posts"
 	"VoizyServer/internal/util"
 	"encoding/json"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
 )
 
-func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
+func ListFeedHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 		return
@@ -25,8 +24,8 @@ func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID, err := strconv.ParseInt(userIDString, 10, 64)
 	if err != nil {
-		log.Println("Failed to convert userIDString (string) to userID (int64): ", err)
-		http.Error(w, "Failed to convert param 'id'.", http.StatusInternalServerError)
+		log.Println("Failed to parse userIDString (string) to userID (int64) due to the following error: ", err)
+		http.Error(w, "Failed to parse param 'id'.", http.StatusInternalServerError)
 		return
 	}
 
@@ -37,8 +36,8 @@ func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	limit, err := strconv.ParseInt(limitString, 10, 64)
 	if err != nil {
-		log.Println("Failed to convert limitString (string) to limit (int64): ", err)
-		http.Error(w, "Failed to convert param 'limit'.", http.StatusInternalServerError)
+		log.Println("Failed to parse limitString (string) to limit (int64) due to the following error: ", err)
+		http.Error(w, "Failed to parse param 'limit'.", http.StatusInternalServerError)
 		return
 	}
 
@@ -49,37 +48,39 @@ func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	page, err := strconv.ParseInt(pageString, 10, 64)
 	if err != nil {
-		log.Println("Failed to convert pageString (string) to page (int64): ", err)
-		http.Error(w, "Failed to convert param 'page'.", http.StatusInternalServerError)
+		log.Println("Failed to parse pageString (string) to page (int64) due to the following error: ", err)
+		http.Error(w, "Failed to parse param 'page'.", http.StatusInternalServerError)
 		return
 	}
 
-	response, err := listPosts(userID, limit, page)
+	response, err := listFeed(limit, page)
 	if err != nil {
-		log.Println("Failed to list posts due to the following error: ", err)
-		http.Error(w, "Failed to list posts.", http.StatusInternalServerError)
+		log.Println("Failed to list feed due to the following error: ", err)
+		http.Error(w, "Failed to list feed.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(userID, "view_main_feed", "", nil, nil)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
+func listFeed(limit, page int64) (models.ListFeedResponse, error) {
 	offset := (page - 1) * limit
 
 	var totalPosts int64
 	countQuery := `
 		SELECT COUNT(*)
 		FROM posts
-		WHERE user_id = ?
+		WHERE to_user_id = -1
 	`
-	err := database.DB.QueryRow(countQuery, userID).Scan(&totalPosts)
+	err := database.DB.QueryRow(countQuery).Scan(&totalPosts)
 	if err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to get totalPosts: %w", err)
+		return models.ListFeedResponse{}, err
 	}
 
-	selectQuery := `
+	query := `
 		SELECT
 			post_id,
 			user_id,
@@ -98,18 +99,17 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			poll_duration_type,
 			poll_duration_length
 		FROM posts
-		WHERE user_id = ?
+		WHERE to_user_id = -1
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
-	rows, err := database.DB.Query(selectQuery, userID, limit, offset)
+	rows, err := database.DB.Query(query, limit, offset)
 	if err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to select posts: %w", err)
+		return models.ListFeedResponse{}, err
 	}
 	defer rows.Close()
 
-	var posts []models.Post
-	var listPosts []models.ListPost
+	var posts []models.ListPost
 	for rows.Next() {
 		var p models.Post
 		err := rows.Scan(
@@ -134,11 +134,9 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			log.Println("Scan rows error: ", err)
 			continue
 		}
-		posts = append(posts, p)
-		listPosts = append(listPosts, models.ListPost{
+		posts = append(posts, models.ListPost{
 			PostID:             p.PostID,
 			UserID:             p.UserID,
-			ToUserID:           p.ToUserID,
 			OriginalPostID:     util.SqlNullInt64ToPtr(p.OriginalPostID),
 			Impressions:        p.Impressions,
 			Views:              p.Views,
@@ -154,14 +152,14 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			PollDurationLength: util.SqlNullInt64ToPtr(p.PollDurationLength),
 		})
 	}
-
-	if err = rows.Err(); err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to iterate over rows: %w", err)
+	if err := rows.Err(); err != nil {
+		return models.ListFeedResponse{}, err
 	}
 
 	totalPages := int64(math.Ceil(float64(totalPosts) / float64(limit)))
-	return models.ListPostsResponse{
-		Posts:      listPosts,
+
+	return models.ListFeedResponse{
+		Posts:      posts,
 		Limit:      limit,
 		Page:       page,
 		TotalPosts: totalPosts,

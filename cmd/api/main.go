@@ -47,6 +47,9 @@ func main() {
 	http.HandleFunc("/posts/comments/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentHandler))
 	http.HandleFunc("/posts/comments/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostCommentsHandler))
 	http.HandleFunc("/posts/comments/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentReactionHandler))
+	http.HandleFunc("/posts/feed/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListFeedHandler))
+	http.HandleFunc("/posts/impressions/put", middleware.ValidateAPIKeyMiddleware(postHandlers.PutPostImpressionHandler))
+	http.HandleFunc("/posts/views/put", middleware.ValidateAPIKeyMiddleware(postHandlers.PutPostViewHandler))
 
 	// ANALYTICS
 	http.HandleFunc("/analytics/track", middleware.CombinedAuthMiddleware(analyticsHandlers.BatchTrackEventsHandler))

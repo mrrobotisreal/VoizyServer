@@ -9,6 +9,8 @@ type Post struct {
 	UserID             int64           `json:"userID"`
 	ToUserID           int64           `json:"toUserID"`
 	OriginalPostID     sql.NullInt64   `json:"originalPostID"`
+	Impressions        int64           `json:"impressions"`
+	Views              int64           `json:"views"`
 	ContentText        sql.NullString  `json:"contentText"`
 	CreatedAt          sql.NullTime    `json:"createdAt"`
 	UpdatedAt          sql.NullTime    `json:"updatedAt"`
