@@ -34,6 +34,7 @@ func main() {
 	http.HandleFunc("/users/friends/create", middleware.CombinedAuthMiddleware(userHandlers.CreateFriendRequestHandler))
 	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
 	http.HandleFunc("/users/friends/list/common", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendsInCommonHandler))
+	http.HandleFunc("/users/friends/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalFriendsHandler))
 
 	// POSTS
 	http.HandleFunc("/posts/create", middleware.CombinedAuthMiddleware(postHandlers.CreatePostHandler))
@@ -62,4 +63,8 @@ func main() {
 	if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
 		log.Fatal(err)
 	}
+	//fmt.Println("Server running securely on localhost:9295")
+	//if err := http.ListenAndServe(":9295", nil); err != nil {
+	//	log.Fatal(err)
+	//}
 }

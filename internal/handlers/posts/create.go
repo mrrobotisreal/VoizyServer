@@ -137,6 +137,7 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 			query := `
 				INSERT INTO posts (
 					user_id,
+				    to_user_id,
 				    original_post_id,
 					content_text,
 					location_name,
@@ -144,10 +145,11 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 					location_lng,
 					is_poll
 				)
-				VALUES (?, ?, ?, ?, ?, ?, ?)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 			`
 			result, err := tx.Exec(query,
 				req.UserID,
+				req.ToUserID,
 				*req.OriginalPostID,
 				req.ContentText,
 				req.LocationName,
@@ -165,16 +167,18 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 		query := `
 			INSERT INTO posts (
 				user_id,
+			    to_user_id,
 				content_text,
 				location_name,
 				location_lat,
 				location_lng,
 				is_poll
 			)
-			VALUES (?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
 		`
 		result, err := tx.Exec(query,
 			req.UserID,
+			req.ToUserID,
 			req.ContentText,
 			req.LocationName,
 			req.LocationLat,
@@ -191,13 +195,14 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 	if req.OriginalPostID != nil {
 		query := `
 			INSERT INTO posts (
-				user_id, original_post_id, content_text, location_name, location_lat, location_lng,
+				user_id, to_user_id, original_post_id, content_text, location_name, location_lat, location_lng,
 				is_poll, poll_question, poll_duration_type, poll_duration_length
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 		result, err := tx.Exec(query,
 			req.UserID,
+			req.ToUserID,
 			*req.OriginalPostID,
 			req.ContentText,
 			req.LocationName,
@@ -217,13 +222,14 @@ func insertPost(tx *sql.Tx, req models.CreatePostRequest) (int64, error) {
 
 	query := `
 		INSERT INTO posts (
-			user_id, content_text, location_name, location_lat, location_lng,
+			user_id, to_user_id, content_text, location_name, location_lat, location_lng,
 			is_poll, poll_question, poll_duration_type, poll_duration_length
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	result, err := tx.Exec(query,
 		req.UserID,
+		req.ToUserID,
 		req.ContentText,
 		req.LocationName,
 		req.LocationLat,

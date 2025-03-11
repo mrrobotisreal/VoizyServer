@@ -5,6 +5,7 @@ import "time"
 type ListPost struct {
 	PostID             int64      `json:"postID"`
 	UserID             int64      `json:"userID"`
+	ToUserID           int64      `json:"toUserID"`
 	OriginalPostID     *int64     `json:"originalPostID"`
 	ContentText        *string    `json:"contentText"`
 	CreatedAt          *time.Time `json:"createdAt"`

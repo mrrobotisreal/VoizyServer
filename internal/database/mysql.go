@@ -155,6 +155,7 @@ func createTables() error {
 	CREATE TABLE IF NOT EXISTS posts (
 		post_id            BIGINT AUTO_INCREMENT PRIMARY KEY,
 		user_id            BIGINT NOT NULL,
+		to_user_id		   BIGINT NOT NULL DEFAULT -1,
 		original_post_id   BIGINT NULL DEFAULT NULL,
 		content_text       TEXT,
 		created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -2,6 +2,7 @@ package models
 
 type CreatePostRequest struct {
 	UserID             int64    `json:"userID"`
+	ToUserID           int64    `json:"toUserID"`
 	OriginalPostID     *int64   `json:"originalPostID,omitempty"`
 	ContentText        string   `json:"contentText"`
 	LocationName       string   `json:"locationName"`
