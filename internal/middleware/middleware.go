@@ -136,11 +136,11 @@ func ValidateAPIKeyMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		err = updateAPIKeyLastUsedAt(userID, apiKey.Key)
-		if err != nil {
-			sendError(w, "Failed to update API Key usage.", http.StatusInternalServerError)
-			return
-		}
+		//err = updateAPIKeyLastUsedAt(userID, apiKey.Key)
+		//if err != nil {
+		//	sendError(w, "Failed to update API Key usage.", http.StatusInternalServerError)
+		//	return
+		//}
 
 		ctx := context.WithValue(r.Context(), models.APIKeyContextKey, apiKey)
 		ctx = context.WithValue(ctx, models.UserIDContextKey, userID)
