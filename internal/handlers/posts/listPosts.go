@@ -102,7 +102,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
-	rows, err := database.DB.Query(selectQuery, userID, limit, offset)
+	rows, err := database.DB.Query(selectQuery, userID, userID, limit, offset)
 	if err != nil {
 		return models.ListPostsResponse{}, fmt.Errorf("failed to select posts: %w", err)
 	}
