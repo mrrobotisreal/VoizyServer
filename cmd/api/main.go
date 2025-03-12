@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/users/profile/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateUserProfileHandler))
 	// User Images
 	http.HandleFunc("/users/images/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalImages))
+	http.HandleFunc("/users/images/get/profilePic", middleware.ValidateAPIKeyMiddleware(userHandlers.GetProfilePicHandler))
 	http.HandleFunc("/users/images/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListImagesHandler))
 	http.HandleFunc("/users/images/profilePic/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateProfilePicHandler))
 	// Friendships
