@@ -4,6 +4,7 @@ import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
 	"VoizyServer/internal/util"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -83,41 +84,67 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 
 	selectQuery := `
 		SELECT
-			friendship_id,
-			user_id,
-			friend_id,
-			status,
-			created_at
-		FROM friendships
-		WHERE user_id = ? AND status = 'accepted'
-		ORDER BY created_at DESC
+			f.friendship_id,
+			f.user_id,
+			f.friend_id,
+			f.status,
+			f.created_at,
+			
+			u.username AS friend_username,
+			
+			up.first_name,
+			up.last_name,
+			up.preferred_name,
+			
+			ui.image_url AS profile_pic_url
+		FROM friendships f
+		LEFT JOIN users u
+			ON u.user_id = f.friend_id
+		LEFT JOIN user_profiles up
+			ON up.user_id = f.friend_id
+		LEFT JOIN user_images ui
+			ON ui.user_id = f.friend_id
+			AND ui.is_profile_pic = 1
+		WHERE f.user_id = ?
+			AND f.status = 'accepted'
+		ORDER BY f.created_at DESC
 		LIMIT ? OFFSET ?
 	`
 	rows, err := database.DB.Query(selectQuery, userID, limit, offset)
 	if err != nil {
 		return models.ListFriendshipsResponse{}, err
 	}
+	defer rows.Close()
+
 	var friends []models.ListFriendship
 	for rows.Next() {
-		var f models.Friendship
+		var f models.ListFriendship
+		var friendUsername, firstName, lastName, preferredName, profilePicURL, status sql.NullString
+		var createdAt sql.NullTime
 		err := rows.Scan(
 			&f.FriendshipID,
 			&f.UserID,
 			&f.FriendID,
-			&f.Status,
-			&f.CreatedAt,
+			&status,
+			&createdAt,
+			&friendUsername,
+			&firstName,
+			&lastName,
+			&preferredName,
+			&profilePicURL,
 		)
 		if err != nil {
 			log.Println("Scan rows error: ", err)
 			continue
 		}
-		friends = append(friends, models.ListFriendship{
-			FriendshipID: f.FriendshipID,
-			UserID:       f.UserID,
-			FriendID:     f.FriendID,
-			Status:       util.SqlNullStringToPtr(f.Status),
-			CreatedAt:    util.SqlNullTimeToPtr(f.CreatedAt),
-		})
+		f.Status = util.SqlNullStringToPtr(status)
+		f.CreatedAt = util.SqlNullTimeToPtr(createdAt)
+		f.FriendUsername = util.SqlNullStringToPtr(friendUsername)
+		f.FirstName = util.SqlNullStringToPtr(firstName)
+		f.LastName = util.SqlNullStringToPtr(lastName)
+		f.PreferredName = util.SqlNullStringToPtr(preferredName)
+		f.ProfilePicURL = util.SqlNullStringToPtr(profilePicURL)
+		friends = append(friends, f)
 	}
 	if err = rows.Err(); err != nil {
 		return models.ListFriendshipsResponse{}, err

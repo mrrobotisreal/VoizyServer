@@ -23,20 +23,29 @@ func main() {
 	//}
 	//defer database.RDB.Close()
 
-	// USERS
+	/// USERS ///
+	// Create and Login
 	http.HandleFunc("/users/create", userHandlers.CreateUserHandler)
 	http.HandleFunc("/users/login", authHandlers.LoginHandler)
+	// User
 	http.HandleFunc("/users/get", middleware.ValidateAPIKeyMiddleware(userHandlers.GetUserHandler))
 	http.HandleFunc("/users/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateUserHandler))
+	// User Profile
 	http.HandleFunc("/users/profile/get", middleware.ValidateAPIKeyMiddleware(userHandlers.GetProfileHandler))
-	http.HandleFunc("/users/profile/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListUserProfilesHandler)) // temp handler
+	http.HandleFunc("/users/profile/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListUserProfilesHandler))
 	http.HandleFunc("/users/profile/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateUserProfileHandler))
+	// User Images
+	http.HandleFunc("/users/images/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalImages))
+	http.HandleFunc("/users/images/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListImagesHandler))
+	http.HandleFunc("/users/images/profilePic/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateProfilePicHandler))
+	// Friendships
 	http.HandleFunc("/users/friends/create", middleware.CombinedAuthMiddleware(userHandlers.CreateFriendRequestHandler))
 	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
 	http.HandleFunc("/users/friends/list/common", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendsInCommonHandler))
 	http.HandleFunc("/users/friends/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalFriendsHandler))
 
-	// POSTS
+	/// POSTS ///
+	// Posts
 	http.HandleFunc("/posts/create", middleware.CombinedAuthMiddleware(postHandlers.CreatePostHandler))
 	http.HandleFunc("/posts/update", middleware.CombinedAuthMiddleware(postHandlers.UpdatePostHandler))
 	http.HandleFunc("/posts/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostsHandler))
@@ -44,21 +53,24 @@ func main() {
 	http.HandleFunc("/posts/get/details", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostDetailsHandler))
 	http.HandleFunc("/posts/get/media", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostMediaHandler))
 	http.HandleFunc("/posts/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutPostReactionHandler))
+	// Comments
 	http.HandleFunc("/posts/comments/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentHandler))
 	http.HandleFunc("/posts/comments/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostCommentsHandler))
 	http.HandleFunc("/posts/comments/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentReactionHandler))
+	// Feeds
 	http.HandleFunc("/posts/feed/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListFeedHandler))
 	http.HandleFunc("/posts/feed/recommended/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListRecommendedFeedHandler))
+	// Impressions and Views
 	http.HandleFunc("/posts/impressions/put", middleware.ValidateAPIKeyMiddleware(postHandlers.PutPostImpressionHandler))
 	http.HandleFunc("/posts/views/put", middleware.ValidateAPIKeyMiddleware(postHandlers.PutPostViewHandler))
 
-	// ANALYTICS
+	/// ANALYTICS
 	http.HandleFunc("/analytics/track", middleware.CombinedAuthMiddleware(analyticsHandlers.BatchTrackEventsHandler))
 	http.HandleFunc("/analytics/events/list", middleware.CombinedAuthMiddleware(analyticsHandlers.ListEventsHandler))
 	http.HandleFunc("/analytics/stats/list", middleware.CombinedAuthMiddleware(analyticsHandlers.ListStatsHandler))
 
-	// AUTH
-	http.HandleFunc("/api/keys/insert", authHandlers.InsertApiKeyHandler)
+	/// AUTH
+	// http.HandleFunc("/api/keys/insert", authHandlers.InsertApiKeyHandler)
 
 	certFile := "/etc/letsencrypt/live/voizy.me/fullchain.pem"
 	keyFile := "/etc/letsencrypt/live/voizy.me/privkey.pem"
