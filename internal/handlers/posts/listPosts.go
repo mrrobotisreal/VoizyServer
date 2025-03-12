@@ -4,6 +4,7 @@ import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
 	"VoizyServer/internal/util"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -81,25 +82,33 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 
 	selectQuery := `
 		SELECT
-			post_id,
-			user_id,
-			to_user_id,
-			original_post_id,
-			impressions,
-			views,
-			content_text,
-			created_at,
-			updated_at,
-			location_name,
-			location_lat,
-			location_lng,
-			is_poll,
-			poll_question,
-			poll_duration_type,
-			poll_duration_length
-		FROM posts
-		WHERE user_id = ? OR to_user_id = ?
-		ORDER BY created_at DESC
+			p.post_id,
+			p.user_id,
+			p.to_user_id,
+			p.original_post_id,
+			p.impressions,
+			p.views,
+			p.content_text,
+			p.created_at,
+			p.updated_at,
+			p.location_name,
+			p.location_lat,
+			p.location_lng,
+			p.is_poll,
+			p.poll_question,
+			p.poll_duration_type,
+			p.poll_duration_length,
+			u.username,
+			up.first_name,
+			up.last_name,
+			up.preferred_name
+		FROM posts p
+		LEFT JOIN users u
+			ON u.user_id = p.user_id
+		LEFT JOIN user_profiles up
+			ON up.user_id = p.user_id
+		WHERE (p.user_id = ? OR p.to_user_id = ?)
+		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
 	`
 	rows, err := database.DB.Query(selectQuery, userID, userID, limit, offset)
@@ -108,51 +117,69 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 	}
 	defer rows.Close()
 
-	var posts []models.Post
 	var listPosts []models.ListPost
 	for rows.Next() {
-		var p models.Post
+		var p models.ListPost
+		var (
+			originalPostID		 sql.NullInt64
+			contentText				 sql.NullString
+			createdAt					 sql.NullTime
+			updatedAt					 sql.NullTime
+			locationName			 sql.NullString
+			locationLat				 sql.NullFloat64
+			locationLong			 sql.NullFloat64
+			isPoll						 sql.NullBool
+			pollQuestion			 sql.NullString
+			pollDurationType	 sql.NullString
+			pollDurationLength sql.NullInt64
+			username 					 sql.NullString
+			firstName					 sql.NullString
+			lastName					 sql.NullString
+			preferredName			 sql.NullString
+		)
+
 		err := rows.Scan(
 			&p.PostID,
 			&p.UserID,
 			&p.ToUserID,
-			&p.OriginalPostID,
+			&originalPostID,
 			&p.Impressions,
 			&p.Views,
-			&p.ContentText,
-			&p.CreatedAt,
-			&p.UpdatedAt,
-			&p.LocationName,
-			&p.LocationLat,
-			&p.LocationLong,
-			&p.IsPoll,
-			&p.PollQuestion,
-			&p.PollDurationType,
-			&p.PollDurationLength,
+			&contentText,
+			&createdAt,
+			&updatedAt,
+			&locationName,
+			&locationLat,
+			&locationLong,
+			&isPoll,
+			&pollQuestion,
+			&pollDurationType,
+			&pollDurationLength,
+			&username,
+			&firstName,
+			&lastName,
+			&preferredName,
 		)
 		if err != nil {
 			log.Println("Scan rows error: ", err)
 			continue
 		}
-		posts = append(posts, p)
-		listPosts = append(listPosts, models.ListPost{
-			PostID:             p.PostID,
-			UserID:             p.UserID,
-			ToUserID:           p.ToUserID,
-			OriginalPostID:     util.SqlNullInt64ToPtr(p.OriginalPostID),
-			Impressions:        p.Impressions,
-			Views:              p.Views,
-			ContentText:        util.SqlNullStringToPtr(p.ContentText),
-			CreatedAt:          util.SqlNullTimeToPtr(p.CreatedAt),
-			UpdatedAt:          util.SqlNullTimeToPtr(p.UpdatedAt),
-			LocationName:       util.SqlNullStringToPtr(p.LocationName),
-			LocationLat:        util.SqlNullFloat64ToPtr(p.LocationLat),
-			LocationLong:       util.SqlNullFloat64ToPtr(p.LocationLong),
-			IsPoll:             util.SqlNullBoolToPtr(p.IsPoll),
-			PollQuestion:       util.SqlNullStringToPtr(p.PollQuestion),
-			PollDurationType:   util.SqlNullStringToPtr(p.PollDurationType),
-			PollDurationLength: util.SqlNullInt64ToPtr(p.PollDurationLength),
-		})
+		p.OriginalPostID = util.SqlNullInt64ToPtr(originalPostID)
+		p.ContentText = util.SqlNullStringToPtr(contentText)
+		p.CreatedAt = util.SqlNullTimeToPtr(createdAt)
+		p.UpdatedAt = util.SqlNullTimeToPtr(updatedAt)
+		p.LocationName = util.SqlNullStringToPtr(locationName)
+		p.LocationLat = util.SqlNullFloat64ToPtr(locationLat)
+		p.LocationLong = util.SqlNullFloat64ToPtr(locationLong)
+		p.IsPoll = util.SqlNullBoolToPtr(isPoll)
+		p.PollQuestion = util.SqlNullStringToPtr(pollQuestion)
+		p.PollDurationType = util.SqlNullStringToPtr(pollDurationType)
+		p.PollDurationLength = util.SqlNullInt64ToPtr(pollDurationLength)
+		p.Username = util.SqlNullStringToPtr(username)
+		p.FirstName = util.SqlNullStringToPtr(firstName)
+		p.LastName = util.SqlNullStringToPtr(lastName)
+		p.PreferredName = util.SqlNullStringToPtr(preferredName)
+		listPosts = append(listPosts, p)
 	}
 
 	if err = rows.Err(); err != nil {

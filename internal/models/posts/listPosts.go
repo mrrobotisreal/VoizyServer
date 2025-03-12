@@ -7,6 +7,10 @@ type ListPost struct {
 	UserID             int64      `json:"userID"`
 	ToUserID           int64      `json:"toUserID"`
 	OriginalPostID     *int64     `json:"originalPostID"`
+	FirstName					 *string    `json:"firstName"`
+	LastName					 *string    `json:"lastName"`
+	PreferredName			 *string    `json:"preferredName"`
+	Username 				   *string    `json:"username"`
 	Impressions        int64      `json:"impressions"`
 	Views              int64      `json:"views"`
 	ContentText        *string    `json:"contentText"`
