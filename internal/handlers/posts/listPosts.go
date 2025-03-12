@@ -98,7 +98,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			poll_duration_type,
 			poll_duration_length
 		FROM posts
-		WHERE user_id = ?
+		WHERE user_id = ? OR to_user_id = ?
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
