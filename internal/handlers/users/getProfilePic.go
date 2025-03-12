@@ -40,7 +40,7 @@ func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 
 func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
 	var response models.GetProfilePicResponse
-	query := `SELECT profile_pic_url FROM user_images WHERE user_id = ? AND is_profile_picture = 1 LIMIT 1`
+	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_picture = 1 LIMIT 1`
 	err := database.DB.QueryRow(query, userID).Scan(&response.ProfilePicURL)
 	if err != nil {
 		return models.GetProfilePicResponse{}, err
