@@ -51,7 +51,7 @@ func getProfile(userID int64) (models.GetUserProfileResponse, error) {
 		SELECT p.profile_id, p.user_id, p.first_name, p.last_name, p.preferred_name, p.birth_date, p.city_of_residence, p.place_of_work, p.date_joined, u.username
 		FROM user_profiles p
 		LEFT JOIN users u ON p.user_id = u.user_id
-		WHERE user_id = ?
+		WHERE p.user_id = ?
 		LIMIT 1
 	`
 
