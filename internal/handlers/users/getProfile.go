@@ -48,8 +48,9 @@ func getProfile(userID int64) (models.GetUserProfileResponse, error) {
 	var profile models.UserProfile
 
 	query := `
-		SELECT profile_id, user_id, first_name, last_name, preferred_name, birth_date, city_of_residence, place_of_work, date_joined
-		FROM user_profiles
+		SELECT p.profile_id, p.user_id, p.first_name, p.last_name, p.preferred_name, p.birth_date, p.city_of_residence, p.place_of_work, p.date_joined, u.username
+		FROM user_profiles p
+		LEFT JOIN users u ON p.user_id = u.user_id
 		WHERE user_id = ?
 		LIMIT 1
 	`
@@ -65,6 +66,7 @@ func getProfile(userID int64) (models.GetUserProfileResponse, error) {
 		&profile.CityOfResidence,
 		&profile.PlaceOfWork,
 		&profile.DateJoined,
+		&profile.Username,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -83,5 +85,6 @@ func getProfile(userID int64) (models.GetUserProfileResponse, error) {
 		CityOfResidence: util.SqlNullStringToPtr(profile.CityOfResidence),
 		PlaceOfWork:     util.SqlNullStringToPtr(profile.PlaceOfWork),
 		DateJoined:      util.SqlNullTimeToPtr(profile.DateJoined),
+		Username:        util.SqlNullStringToPtr(profile.Username),
 	}, nil
 }

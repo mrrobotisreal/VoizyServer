@@ -12,4 +12,5 @@ type UserProfile struct {
 	CityOfResidence sql.NullString
 	PlaceOfWork     sql.NullString
 	DateJoined      sql.NullTime
+	Username				sql.NullString
 }

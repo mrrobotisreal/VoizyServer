@@ -111,6 +111,7 @@ func createTables() error {
 		user_id       BIGINT NOT NULL,
 		image_url     VARCHAR(255) NOT NULL,
 		is_profile_pic BOOLEAN NOT NULL DEFAULT 0,
+		is_cover_pic   BOOLEAN NOT NULL DEFAULT 0,
 		uploaded_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 	);`
