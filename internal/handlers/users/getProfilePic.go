@@ -6,6 +6,7 @@ import (
 	"VoizyServer/internal/util"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -42,7 +43,7 @@ func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 
 func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
 	var response models.GetProfilePicResponse
-	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 AND is_cover_pic = 1 LIMIT 2`
+	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 OR is_cover_pic = 1 LIMIT 2`
 	rows, err := database.DB.Query(query, userID)
 	if err != nil {
 		return models.GetProfilePicResponse{}, err
@@ -55,7 +56,12 @@ func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
 			return models.GetProfilePicResponse{}, err
 		}
 		response.ProfilePicURL = util.SqlNullStringToPtr(profilePicURL)
+		fmt.Println("profilePicURL: ", profilePicURL)
 		response.CoverPicURL = util.SqlNullStringToPtr(coverPicURL)
+		fmt.Println("coverPicURL: ", coverPicURL)
+	}
+	if err := rows.Err(); err != nil {
+		return models.GetProfilePicResponse{}, err
 	}
 
 	return response, nil
