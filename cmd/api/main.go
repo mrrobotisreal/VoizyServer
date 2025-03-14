@@ -49,6 +49,8 @@ func main() {
 	/// POSTS ///
 	// Posts
 	http.HandleFunc("/posts/create", middleware.CombinedAuthMiddleware(postHandlers.CreatePostHandler))
+	// http.HandleFunc("/posts/get/presigned", middleware.CombinedAuthMiddleware(postHandlers.GetPresignedPutUrlHandler))
+	// http.HandleFunc("/posts/batch/get/presigned", middleware.CombinedAuthMiddleware(postHandlers.GetBatchPresignedPutUrlHandler))
 	http.HandleFunc("/posts/update", middleware.CombinedAuthMiddleware(postHandlers.UpdatePostHandler))
 	http.HandleFunc("/posts/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostsHandler))
 	http.HandleFunc("/posts/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalPostsHandler))
@@ -56,6 +58,7 @@ func main() {
 	http.HandleFunc("/posts/get/media", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostMediaHandler))
 	http.HandleFunc("/posts/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutPostReactionHandler))
 	// Comments
+	http.HandleFunc("/posts/comments/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalCommentsHandler))
 	http.HandleFunc("/posts/comments/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentHandler))
 	http.HandleFunc("/posts/comments/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostCommentsHandler))
 	http.HandleFunc("/posts/comments/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutCommentReactionHandler))
