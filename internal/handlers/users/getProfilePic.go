@@ -3,6 +3,8 @@ package handlers
 import (
 	database "VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"VoizyServer/internal/util"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -40,10 +42,20 @@ func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 
 func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
 	var response models.GetProfilePicResponse
-	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 LIMIT 1`
-	err := database.DB.QueryRow(query, userID).Scan(&response.ProfilePicURL)
+	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 AND is_cover_pic = 1 LIMIT 2`
+	rows, err := database.DB.Query(query, userID)
 	if err != nil {
 		return models.GetProfilePicResponse{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var profilePicURL, coverPicURL sql.NullString
+		if err := rows.Scan(&profilePicURL, &coverPicURL); err != nil {
+			return models.GetProfilePicResponse{}, err
+		}
+		response.ProfilePicURL = util.SqlNullStringToPtr(profilePicURL)
+		response.CoverPicURL = util.SqlNullStringToPtr(coverPicURL)
 	}
 
 	return response, nil
