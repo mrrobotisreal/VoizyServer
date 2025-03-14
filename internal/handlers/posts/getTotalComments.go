@@ -48,7 +48,7 @@ func getTotalComments(postID int64) (models.GetTotalCommentsResponse, error) {
 	`
 	row := database.DB.QueryRow(query, postID)
 	err := row.Scan(
-		&response.TotalPosts,
+		&response.TotalComments,
 	)
 	if err != nil {
 		return models.GetTotalCommentsResponse{}, err
