@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
+func GetCoverPicHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 		return
@@ -27,10 +27,10 @@ func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := getProfilePic(userID)
+	response, err := getCoverPic(userID)
 	if err != nil {
-		log.Println("Failed to get profile pic due to the following error: ", err)
-		http.Error(w, "Failed to get profile pic.", http.StatusInternalServerError)
+		log.Println("Failed to get cover pic due to the following error: ", err)
+		http.Error(w, "Failed to get cover pic.", http.StatusInternalServerError)
 		return
 	}
 
@@ -38,12 +38,12 @@ func GetProfilePicHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
-	var response models.GetProfilePicResponse
-	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 LIMIT 1`
-	err := database.DB.QueryRow(query, userID).Scan(&response.ProfilePicURL)
+func getCoverPic(userID int64) (models.GetCoverPicResponse, error) {
+	var response models.GetCoverPicResponse
+	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_cover_pic = 1 LIMIT 1`
+	err := database.DB.QueryRow(query, userID).Scan(&response.CoverPicURL)
 	if err != nil {
-		return models.GetProfilePicResponse{}, err
+		return models.GetCoverPicResponse{}, err
 	}
 
 	return response, nil
