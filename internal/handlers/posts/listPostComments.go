@@ -139,10 +139,10 @@ func listPostComments(postID, limit, page int64) (models.ListCommentsResponse, e
 			log.Println("Scan rows error: ", err)
 			continue
 		}
-		c.username = util.SqlNullStringToPointer(username)
-		c.firstName = util.SqlNullStringToPointer(firstName)
-		c.lastName = util.SqlNullStringToPointer(lastName)
-		c.preferredName = util.SqlNullStringToPointer(preferredName)
+		c.Username = util.SqlNullStringToPointer(username)
+		c.FirstName = util.SqlNullStringToPointer(firstName)
+		c.LastName = util.SqlNullStringToPointer(lastName)
+		c.PreferredName = util.SqlNullStringToPointer(preferredName)
 		c.ProfilePicURL = util.SqlNullStringToPointer(profilePicURL)
 		if reactions.Valid && reactions.String != "" {
 			reactionsSlice := util.SplitAndTrim(reactions.String, ",")
