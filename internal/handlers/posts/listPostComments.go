@@ -11,6 +11,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func ListPostCommentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +146,7 @@ func listPostComments(postID, limit, page int64) (models.ListCommentsResponse, e
 		c.PreferredName = util.SqlNullStringToPtr(preferredName)
 		c.ProfilePicURL = util.SqlNullStringToPtr(profilePicURL)
 		if reactions.Valid && reactions.String != "" {
-			reactionsSlice := util.SplitAndTrim(reactions.String, ",")
+			reactionsSlice := strings.Split(reactions.String, ", ")
 			c.Reactions = reactionsSlice
 		} else {
 			c.Reactions = []string{}
