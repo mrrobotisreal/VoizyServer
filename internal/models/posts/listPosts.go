@@ -23,6 +23,10 @@ type ListPost struct {
 	PollQuestion       *string    `json:"pollQuestion"`
 	PollDurationType   *string    `json:"pollDurationType"`
 	PollDurationLength *int64     `json:"pollDurationLength"`
+	UserReaction			 *string    `json:"userReaction"`
+	TotalReactions		 int64      `json:"totalReactions"`
+	TotalComments      int64      `json:"totalComments"`
+	TotalPostShares		 int64      `json:"totalPostShares"`
 }
 
 type ListPostsResponse struct {

@@ -102,11 +102,17 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			up.first_name,
 			up.last_name,
 			up.preferred_name
+			pr_user.reaction_type AS user_reaction,
+			(SELECT COUNT(*) FROM post_reactions pr WHERE pr.post_id = p.post_id) AS total_reactions,
+			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS total_comments,
+			(SELECT COUNT(*) FROM post_shares ps WHERE ps.post_id = p.post_id) AS total_post_shares
 		FROM posts p
 		LEFT JOIN users u
 			ON u.user_id = p.user_id
 		LEFT JOIN user_profiles up
 			ON up.user_id = p.user_id
+		LEFT JOIN post_reactions pr_user
+			ON pr_user.post_id = p.post_id AND pr_user.user_id = ?
 		WHERE (p.user_id = ? OR p.to_user_id = ?)
 		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
@@ -136,6 +142,10 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			firstName					 sql.NullString
 			lastName					 sql.NullString
 			preferredName			 sql.NullString
+			userReaction			 sql.NullString
+			totalReactions		 int64
+			totalComments			 int64
+			totalPostShares		 int64
 		)
 
 		err := rows.Scan(
@@ -159,6 +169,10 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			&firstName,
 			&lastName,
 			&preferredName,
+			&userReaction,
+			&totalReactions,
+			&totalComments,
+			&totalPostShares,
 		)
 		if err != nil {
 			log.Println("Scan rows error: ", err)
@@ -179,6 +193,10 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		p.FirstName = util.SqlNullStringToPtr(firstName)
 		p.LastName = util.SqlNullStringToPtr(lastName)
 		p.PreferredName = util.SqlNullStringToPtr(preferredName)
+		p.UserReaction = util.SqlNullStringToPtr(userReaction)
+		p.TotalReactions = totalReactions
+		p.TotalComments = totalComments
+		p.TotalPostShares = totalPostShares
 		listPosts = append(listPosts, p)
 	}
 
