@@ -101,7 +101,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			u.username,
 			up.first_name,
 			up.last_name,
-			up.preferred_name
+			up.preferred_name,
 			pr_user.reaction_type AS user_reaction,
 			(SELECT COUNT(*) FROM post_reactions pr WHERE pr.post_id = p.post_id) AS total_reactions,
 			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS total_comments,
