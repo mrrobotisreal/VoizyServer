@@ -15,9 +15,9 @@ func GetTotalCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postIDString := r.URL.Query().Get("postID")
+	postIDString := r.URL.Query().Get("id")
 	if postIDString == "" {
-		http.Error(w, "Missing required param 'postID'.", http.StatusBadRequest)
+		http.Error(w, "Missing required param 'id'.", http.StatusBadRequest)
 		return
 	}
 	postID, err := strconv.ParseInt(postIDString, 10, 64)
