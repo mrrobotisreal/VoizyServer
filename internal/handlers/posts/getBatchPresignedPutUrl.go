@@ -39,9 +39,6 @@ func GetBatchPresignedPutUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 func getBatchPresignedPutUrls(req models.GetBatchPresignedPutUrlRequest) (models.GetBatchPresignedPutUrlResponse, error) {
 	var response models.GetBatchPresignedPutUrlResponse
-	response = models.GetBatchPresignedPutUrlResponse{
-		Images: make([]string, 0),
-	}
 	presignClient := s3.NewPresignClient(aws.S3Client)
 	bucket := "voizy-app"
 
