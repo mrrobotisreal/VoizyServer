@@ -56,6 +56,7 @@ func main() {
 	http.HandleFunc("/posts/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalPostsHandler))
 	http.HandleFunc("/posts/get/details", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostDetailsHandler))
 	http.HandleFunc("/posts/get/media", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPostMediaHandler))
+	http.HandleFunc("/posts/put/media", middleware.CombinedAuthMiddleware(postHandlers.PutPostMediaHandler))
 	http.HandleFunc("/posts/reactions/put", middleware.CombinedAuthMiddleware(postHandlers.PutPostReactionHandler))
 	// Comments
 	http.HandleFunc("/posts/comments/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalCommentsHandler))
