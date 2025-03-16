@@ -50,7 +50,7 @@ func main() {
 	// Posts
 	http.HandleFunc("/posts/create", middleware.CombinedAuthMiddleware(postHandlers.CreatePostHandler))
 	// http.HandleFunc("/posts/get/presigned", middleware.CombinedAuthMiddleware(postHandlers.GetPresignedPutUrlHandler))
-	// http.HandleFunc("/posts/batch/get/presigned", middleware.CombinedAuthMiddleware(postHandlers.GetBatchPresignedPutUrlHandler))
+	http.HandleFunc("/posts/batch/get/presigned", middleware.CombinedAuthMiddleware(postHandlers.GetBatchPresignedPutUrlHandler))
 	http.HandleFunc("/posts/update", middleware.CombinedAuthMiddleware(postHandlers.UpdatePostHandler))
 	http.HandleFunc("/posts/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListPostsHandler))
 	http.HandleFunc("/posts/get/total", middleware.ValidateAPIKeyMiddleware(postHandlers.GetTotalPostsHandler))
