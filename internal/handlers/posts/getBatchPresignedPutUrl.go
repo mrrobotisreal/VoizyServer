@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	aws "VoizyServer/internal/aws/aws.go"
+	aws "VoizyServer/internal/aws"
 	models "VoizyServer/internal/models/posts"
 	"context"
 	"encoding/json"
