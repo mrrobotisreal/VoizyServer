@@ -47,7 +47,7 @@ func getBatchUserImagesPresignedPutUrls(req models.GetBatchUserImagesPresignedPu
 		if fileName == "" {
 			continue
 		}
-		key := fmt.Sprintf("%d/%d/%s", req.UserID, "photos", fileName)
+		key := fmt.Sprintf("%d/%s/%s", req.UserID, "photos", fileName)
 		input := &s3.PutObjectInput{
 			Bucket: &bucket,
 			Key: &key,

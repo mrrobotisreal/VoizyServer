@@ -2,7 +2,6 @@ package models
 
 type GetBatchUserImagesPresignedPutUrlsRequest struct {
 	UserID int64    `json:"userID"`
-	PostID int64  `json:"postID"`
 	FileNames []string `json:"fileNames"`
 }
 
