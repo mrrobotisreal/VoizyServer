@@ -19,7 +19,7 @@ func GetBatchUserImagesPresignedPutUrlsHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var req models.GetBatchUserImagesPresignedPutUrlRequest
+	var req models.GetBatchUserImagesPresignedPutUrlsRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid request body.", http.StatusBadRequest)
