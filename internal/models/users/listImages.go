@@ -4,6 +4,7 @@ import "time"
 
 type UserImage struct {
 	UserID           int64     `json:"userID"`
+	ImageID 				 int64     `json:"imageID"`
 	ImageURL         string    `json:"imageURL"`
 	IsProfilePicture bool      `json:"isProfilePicture"`
 	UploadedAt       time.Time `json:"uploadedAt"`

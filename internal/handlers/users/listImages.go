@@ -81,6 +81,7 @@ func listImages(userID, limit, page int64) (models.ListImagesResponse, error) {
 	selectQuery := `
 		SELECT
 			user_id,
+			user_image_id,
 			image_url,
 			is_profile_pic,
 			uploaded_at
@@ -100,6 +101,7 @@ func listImages(userID, limit, page int64) (models.ListImagesResponse, error) {
 		var i models.UserImage
 		err := rows.Scan(
 			&i.UserID,
+			&i.UserImageID,
 			&i.ImageURL,
 			&i.IsProfilePicture,
 			&i.UploadedAt,
