@@ -40,6 +40,9 @@ func main() {
 	http.HandleFunc("/users/images/get/coverPic", middleware.ValidateAPIKeyMiddleware(userHandlers.GetCoverPicHandler))
 	http.HandleFunc("/users/images/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListImagesHandler))
 	http.HandleFunc("/users/images/profilePic/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateProfilePicHandler))
+	// http.HandleFunc("/users/images/coverPic/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateCoverPicHandler))
+	http.HandleFunc("/users/images/put", middleware.CombinedAuthMiddleware(userHandlers.PutUserImagesHandler))
+	http.HandleFunc("/users/images/batch/get/presigned", middleware.CombinedAuthMiddleware(userHandlers.GetBatchUserImagesPresignedPutUrlsHandler))
 	// Friendships
 	http.HandleFunc("/users/friends/create", middleware.CombinedAuthMiddleware(userHandlers.CreateFriendRequestHandler))
 	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
