@@ -43,11 +43,11 @@ func getBatchPresignedPutUrls(req models.GetBatchPresignedPutUrlRequest) (models
 	bucket := "voizy-app"
 
 	var results []models.PresignedFile
-	for _, fileName := range req.fileNames {
+	for _, fileName := range req.FileNames {
 		if fileName == "" {
 			continue
 		}
-		key := fmt.Sprintf("%d/%d/%s", req.userID, req.postID, fileName)
+		key := fmt.Sprintf("%d/%d/%s", req.UserID, req.PostID, fileName)
 		input := &s3.PutObjectInput{
 			Bucket: &bucket,
 			Key: &key,
