@@ -101,7 +101,7 @@ func listImages(userID, limit, page int64) (models.ListImagesResponse, error) {
 		var i models.UserImage
 		err := rows.Scan(
 			&i.UserID,
-			&i.UserImageID,
+			&i.ImageID,
 			&i.ImageURL,
 			&i.IsProfilePicture,
 			&i.UploadedAt,
