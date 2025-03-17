@@ -70,7 +70,7 @@ func updateCoverPic(req models.UpdateCoverPicRequest) (models.UpdateCoverPicResp
 	result, err := tx.Exec(setQuery, req.UserID, req.ImageID)
 	if err != nil {
 		tx.Rollback()
-		return models.UpdateProfilePicResponse{
+		return models.UpdateCoverPicResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to update cover pic due to: %v", err),
 		}, err
