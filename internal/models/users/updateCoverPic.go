@@ -2,7 +2,7 @@ package models
 
 type UpdateCoverPicRequest struct {
 	UserID		int64  `json:"userID"`
-	ImageID 	string `json:"imageID"`
+	ImageID 	int64  `json:"imageID"`
 }
 
 type UpdateCoverPicResponse struct {
