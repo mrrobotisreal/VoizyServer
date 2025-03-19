@@ -116,6 +116,24 @@ func createTables() error {
 		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 	);`
 
+	songsTable := `
+	CREATE TABLE IF NOT EXISTS songs (
+		song_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		title   VARCHAR(255) NOT NULL,
+		artist  VARCHAR(255) NOT NULL,
+		song_url VARCHAR(255) NOT NULL
+	);`
+
+	userSongsTable := `
+	CREATE TABLE IF NOT EXISTS user_songs (
+		user_song_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		user_id      BIGINT NOT NULL,
+		song_id      BIGINT NOT NULL,
+		updated_at	 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+		FOREIGN KEY (song_id) REFERENCES songs(song_id) ON DELETE CASCADE
+	);`
+
 	// Friendships
 	friendshipsTable := `
 	CREATE TABLE IF NOT EXISTS friendships (
@@ -363,6 +381,12 @@ func createTables() error {
 		return err
 	}
 	if _, err := DB.Exec(userImagesTable); err != nil {
+		return err
+	}
+	if _, err := DB.Exec(songsTable); err != nil {
+		return err
+	}
+	if _, err := DB.Exec(userSongsTable); err != nil {
 		return err
 	}
 	if _, err := DB.Exec(friendshipsTable); err != nil {

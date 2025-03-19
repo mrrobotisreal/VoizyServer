@@ -34,6 +34,8 @@ func main() {
 	http.HandleFunc("/users/profile/get", middleware.ValidateAPIKeyMiddleware(userHandlers.GetProfileHandler))
 	http.HandleFunc("/users/profile/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListUserProfilesHandler))
 	http.HandleFunc("/users/profile/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateUserProfileHandler))
+	// User Songs
+	http.HandleFunc("/songs/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListSongsHandler))
 	// User Images
 	http.HandleFunc("/users/images/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalImages))
 	http.HandleFunc("/users/images/get/profilePic", middleware.ValidateAPIKeyMiddleware(userHandlers.GetProfilePicHandler))
