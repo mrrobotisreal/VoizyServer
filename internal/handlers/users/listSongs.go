@@ -54,7 +54,7 @@ func ListSongsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := listSongs(userID, limit, page)
+	response, err := listSongs(limit, page)
 	if err != nil {
 		log.Println("Failed to list songs due to the following error: ", err)
 		http.Error(w, "Failed to list songs.", http.StatusInternalServerError)
@@ -65,17 +65,17 @@ func ListSongsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func listSongs(userID, limit, page int64) (models.ListSongsResponse, error) {
+func listSongs(limit, page int64) (models.ListSongsResponse, error) {
 	offset := (page - 1) * limit
 
 	var totalSongs int64
 	if err := database.DB.QueryRow("SELECT COUNT(*) FROM songs").Scan(&totalSongs); err != nil {
-		return nil, err
+		return models.ListSongsResponse{}, err
 	}
 
 	rows, err := database.DB.Query("SELECT * FROM songs LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
-		return nil, err
+		return models.ListSongsResponse{}, err
 	}
 	defer rows.Close()
 
@@ -83,7 +83,7 @@ func listSongs(userID, limit, page int64) (models.ListSongsResponse, error) {
 	for rows.Next() {
 		var song models.Song
 		if err := rows.Scan(&song.SongID, &song.Title, &song.Artist, &song.SongURL); err != nil {
-			return nil, err
+			continue
 		}
 		songs = append(songs, song)
 	}
