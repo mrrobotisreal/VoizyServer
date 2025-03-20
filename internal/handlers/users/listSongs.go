@@ -3,6 +3,7 @@ package handlers
 import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"VoizyServer/internal/util"
 	"encoding/json"
 	"log"
 	"math"
@@ -60,6 +61,11 @@ func ListSongsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to list songs.", http.StatusInternalServerError)
 		return
 	}
+
+	go util.TrackEvent(userID, "view_songs", "song", nil, map[string]interface{}{
+		"limit": limit,
+		"page":  page,
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
