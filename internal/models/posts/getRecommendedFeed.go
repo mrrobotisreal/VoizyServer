@@ -2,7 +2,16 @@ package models
 
 import "time"
 
-type ListPost struct {
+type ScoredPost struct {
+	PostID string  `json:"post_id"`
+	Score  float64 `json:"score"`
+}
+
+type ScoredPostsResponse struct {
+	Recommendations []ScoredPost `json:"recommendations"`
+}
+
+type RecommendedFeedPost struct {
 	PostID             int64      `json:"postID"`
 	UserID             int64      `json:"userID"`
 	ToUserID           int64      `json:"toUserID"`
@@ -24,15 +33,14 @@ type ListPost struct {
 	PollDurationType   *string    `json:"pollDurationType"`
 	PollDurationLength *int64     `json:"pollDurationLength"`
 	UserReaction       *string    `json:"userReaction"`
+	ProfilePicURL      *string    `json:"profilePicURL"`
 	TotalReactions     int64      `json:"totalReactions"`
 	TotalComments      int64      `json:"totalComments"`
 	TotalPostShares    int64      `json:"totalPostShares"`
 }
 
-type ListPostsResponse struct {
-	Posts      []ListPost `json:"posts"`
-	Limit      int64      `json:"limit"`
-	Page       int64      `json:"page"`
-	TotalPosts int64      `json:"totalPosts"`
-	TotalPages int64      `json:"totalPages"`
+type GetRecommendedFeedResponse struct {
+	RecommendedFeedPosts []RecommendedFeedPost `json:"recommendedFeedPosts"`
+	Limit                int64                 `json:"limit"`
+	Page                 int64                 `json:"page"`
 }

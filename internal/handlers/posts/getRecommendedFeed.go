@@ -8,57 +8,39 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 )
 
-func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
+func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	userIDString := r.URL.Query().Get("id")
-	if userIDString == "" {
-		http.Error(w, "Missing required param 'id'.", http.StatusBadRequest)
-		return
-	}
-	userID, err := strconv.ParseInt(userIDString, 10, 64)
+	userIDStr := r.URL.Query().Get("id")
+	limitStr := r.URL.Query().Get("limit")
+	excludeSeenStr := r.URL.Query().Get("excludeSeen")
+
+	recommendedPostsResponse, err := fetchRecommendations(userIDStr, limitStr, excludeSeenStr)
 	if err != nil {
-		log.Println("Failed to convert userIDString (string) to userID (int64): ", err)
-		http.Error(w, "Failed to convert param 'id'.", http.StatusInternalServerError)
+		http.Error(w, "Failed to fetch recommended posts", http.StatusInternalServerError)
 		return
 	}
 
-	limitString := r.URL.Query().Get("limit")
-	if limitString == "" {
-		http.Error(w, "Missing required param 'limit'.", http.StatusBadRequest)
-		return
-	}
-	limit, err := strconv.ParseInt(limitString, 10, 64)
+	limit, err := strconv.ParseInt(limitStr, 10, 64)
 	if err != nil {
 		log.Println("Failed to convert limitString (string) to limit (int64): ", err)
 		http.Error(w, "Failed to convert param 'limit'.", http.StatusInternalServerError)
 		return
 	}
 
-	pageString := r.URL.Query().Get("page")
-	if pageString == "" {
-		http.Error(w, "Missing required param 'page'.", http.StatusBadRequest)
-		return
-	}
-	page, err := strconv.ParseInt(pageString, 10, 64)
+	response, err := getPostInfo(recommendedPostsResponse.Recommendations, limit, 1)
 	if err != nil {
-		log.Println("Failed to convert pageString (string) to page (int64): ", err)
-		http.Error(w, "Failed to convert param 'page'.", http.StatusInternalServerError)
-		return
-	}
-
-	response, err := listPosts(userID, limit, page)
-	if err != nil {
-		log.Println("Failed to list posts due to the following error: ", err)
-		http.Error(w, "Failed to list posts.", http.StatusInternalServerError)
+		log.Println("Failed to get posts info due to the following error: ", err)
+		http.Error(w, "Failed to get recommended feed posts.", http.StatusInternalServerError)
 		return
 	}
 
@@ -66,21 +48,55 @@ func ListPostsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
-	offset := (page - 1) * limit
+func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPostsResponse, error) {
+	baseURL := `http://localhost:5000/api/recommendations`
 
-	var totalPosts int64
-	countQuery := `
-		SELECT COUNT(*)
-		FROM posts
-		WHERE user_id = ?
-	`
-	err := database.DB.QueryRow(countQuery, userID).Scan(&totalPosts)
+	params := url.Values{}
+	params.Add("user_id", userID)
+	params.Add("limit", limit)
+	params.Add("exclude_seen", excludeSeen)
+
+	fullURL := baseURL + "?" + params.Encode()
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to get totalPosts: %w", err)
+		return models.ScoredPostsResponse{}, fmt.Errorf("error creating request: %v", err)
 	}
 
-	selectQuery := `
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return models.ScoredPostsResponse{}, fmt.Errorf("error making request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return models.ScoredPostsResponse{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var fetchRecommendationsResponse models.ScoredPostsResponse
+	decoder := json.NewDecoder(resp.Body)
+	if err := decoder.Decode(&fetchRecommendationsResponse); err != nil {
+		return models.ScoredPostsResponse{}, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return fetchRecommendationsResponse, nil
+}
+
+func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (models.GetRecommendedFeedResponse, error) {
+	offset := (page - 1) * limit
+	placeholders := make([]string, len(recommendedPosts))
+	args := make([]interface{}, len(recommendedPosts))
+	for i, id := range recommendedPosts {
+		placeholders[i] = "?"
+		args[i] = id.PostID
+	}
+	args = append(args, limit, offset)
+
+	query := `
 		SELECT
 			p.post_id,
 			p.user_id,
@@ -102,30 +118,30 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			up.first_name,
 			up.last_name,
 			up.preferred_name,
+			ui.image_url AS profile_pic_url,
 			pr_user.reaction_type AS user_reaction,
 			(SELECT COUNT(*) FROM post_reactions pr WHERE pr.post_id = p.post_id) AS total_reactions,
 			(SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS total_comments,
 			(SELECT COUNT(*) FROM post_shares ps WHERE ps.post_id = p.post_id) AS total_post_shares
 		FROM posts p
-		LEFT JOIN users u
-			ON u.user_id = p.user_id
-		LEFT JOIN user_profiles up
-			ON up.user_id = p.user_id
-		LEFT JOIN post_reactions pr_user
-			ON pr_user.post_id = p.post_id AND pr_user.user_id = ?
-		WHERE (p.user_id = ? OR p.to_user_id = ?)
+		LEFT JOIN users u ON p.user_id = u.user_id
+		LEFT JOIN user_profiles up ON p.user_id = up.user_id
+		LEFT JOIN user_images ui ON p.user_id = ui.user_id
+		LEFT JOIN post_reactions pr_user ON p.post_id = pr_user.post_id
+		WHERE p.post_id IN (` + strings.Join(placeholders, ",") + `)
 		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
 	`
-	rows, err := database.DB.Query(selectQuery, userID, userID, userID, limit, offset)
+
+	rows, err := database.DB.Query(query, args...)
 	if err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to select posts: %w", err)
+		return models.GetRecommendedFeedResponse{}, fmt.Errorf("failed to execute query for post information: %v", err)
 	}
 	defer rows.Close()
 
-	var listPosts []models.ListPost
+	var recommendedFeedPostsList []models.RecommendedFeedPost
 	for rows.Next() {
-		var p models.ListPost
+		var p models.RecommendedFeedPost
 		var (
 			originalPostID     sql.NullInt64
 			contentText        sql.NullString
@@ -143,6 +159,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			lastName           sql.NullString
 			preferredName      sql.NullString
 			userReaction       sql.NullString
+			profilePicURL      sql.NullString
 			totalReactions     int64
 			totalComments      int64
 			totalPostShares    int64
@@ -169,6 +186,7 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 			&firstName,
 			&lastName,
 			&preferredName,
+			&profilePicURL,
 			&userReaction,
 			&totalReactions,
 			&totalComments,
@@ -193,23 +211,21 @@ func listPosts(userID, limit, page int64) (models.ListPostsResponse, error) {
 		p.FirstName = util.SqlNullStringToPtr(firstName)
 		p.LastName = util.SqlNullStringToPtr(lastName)
 		p.PreferredName = util.SqlNullStringToPtr(preferredName)
+		p.ProfilePicURL = util.SqlNullStringToPtr(profilePicURL)
 		p.UserReaction = util.SqlNullStringToPtr(userReaction)
 		p.TotalReactions = totalReactions
 		p.TotalComments = totalComments
 		p.TotalPostShares = totalPostShares
-		listPosts = append(listPosts, p)
+		recommendedFeedPostsList = append(recommendedFeedPostsList, p)
 	}
 
-	if err = rows.Err(); err != nil {
-		return models.ListPostsResponse{}, fmt.Errorf("failed to iterate over rows: %w", err)
+	if err := rows.Err(); err != nil {
+		return models.GetRecommendedFeedResponse{}, fmt.Errorf("failed to iterate over rows: %w", err)
 	}
 
-	totalPages := int64(math.Ceil(float64(totalPosts) / float64(limit)))
-	return models.ListPostsResponse{
-		Posts:      listPosts,
-		Limit:      limit,
-		Page:       page,
-		TotalPosts: totalPosts,
-		TotalPages: totalPages,
-	}, nil
+	return models.GetRecommendedFeedResponse{
+		RecommendedFeedPosts: recommendedFeedPostsList,
+		Limit:                limit,
+		Page:                 page,
+	}, err
 }

@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
+	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -284,6 +286,17 @@ func createTables() error {
 		FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
 	);`
 
+	postViewsTable := `
+	CREATE TABLE IF NOT EXISTS post_views (
+		view_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		post_id BIGINT NOT NULL,
+		user_id BIGINT NOT NULL,
+		viewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+		UNIQUE KEY unique_views (post_id, user_id)
+	);`
+
 	// Messages and Chat
 	conversationsTable := `
 	CREATE TABLE IF NOT EXISTS conversations (
@@ -359,6 +372,11 @@ func createTables() error {
 		FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 	);`
 
+	// Indexes
+	indexQueries := []string{
+		`CREATE INDEX idx_post_views_post_id ON post_views(post_id);`,
+	}
+
 	if _, err := DB.Exec(apiKeysTable); err != nil {
 		return err
 	}
@@ -428,6 +446,9 @@ func createTables() error {
 	if _, err := DB.Exec(postMediaTable); err != nil {
 		return err
 	}
+	if _, err := DB.Exec(postViewsTable); err != nil {
+		return err
+	}
 	if _, err := DB.Exec(conversationsTable); err != nil {
 		return err
 	}
@@ -448,6 +469,17 @@ func createTables() error {
 	}
 	if _, err := DB.Exec(analyticsEventsTable); err != nil {
 		return err
+	}
+	for _, query := range indexQueries {
+		_, err := DB.Exec(query)
+		if err != nil {
+			if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1061 {
+				log.Printf("Index already exists, skipping: %s", query)
+				continue
+			}
+			log.Printf("Error executing query: %s, error: %v", query, err)
+			return err
+		}
 	}
 
 	return nil
