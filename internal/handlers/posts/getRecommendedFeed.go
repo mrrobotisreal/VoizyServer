@@ -94,7 +94,11 @@ func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (model
 	log.Println("recommendedPosts length: ", len(recommendedPosts))
 
 	if len(recommendedPosts) == 0 {
-		return models.GetRecommendedFeedResponse{}, nil
+		return models.GetRecommendedFeedResponse{
+			RecommendedFeedPosts: []models.RecommendedFeedPost{},
+			Limit:                limit,
+			Page:                 page,
+		}, nil
 	}
 
 	offset := (page - 1) * limit
