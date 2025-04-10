@@ -14,7 +14,7 @@ import (
 var DB *sql.DB
 
 func InitMySQL() error {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/voizy?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DBU"), os.Getenv("DBP"), os.Getenv("DBH"))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/voizy?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DBU"), os.Getenv("DBP"), os.Getenv("DBH"), os.Getenv("DBPT"))
 	var err error
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
