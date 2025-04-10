@@ -51,7 +51,7 @@ func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPostsResponse, error) {
-	baseURL := fmt.Sprintf("%s:%s", os.Getenv("RECOMMENDATIONS_SERVICE_HOST"), os.Getenv("RECOMMENDATIONS_SERVICE_PORT"))
+	baseURL := fmt.Sprintf("http://%s:%s/api/recommendations", os.Getenv("RECOMMENDATIONS_SERVICE_HOST"), os.Getenv("RECOMMENDATIONS_SERVICE_PORT"))
 	// baseURL := `http://192.168.4.74:5000/api/recommendations`
 
 	params := url.Values{}
