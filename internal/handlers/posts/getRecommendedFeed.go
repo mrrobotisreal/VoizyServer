@@ -131,10 +131,11 @@ func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (model
 		LEFT JOIN user_profiles up ON p.user_id = up.user_id
 		LEFT JOIN user_images ui ON p.user_id = ui.user_id
 		LEFT JOIN post_reactions pr_user ON p.post_id = pr_user.post_id
-		WHERE p.post_id IN (` + strings.Join(placeholders, ",") + `)
-		ORDER BY p.created_at DESC
-		LIMIT ? OFFSET ?
-	`
+		WHERE p.post_id IN (` + strings.Join(placeholders, ",")
+	// 	`)
+	// 	ORDER BY p.created_at DESC
+	// 	LIMIT ? OFFSET ?
+	// `
 
 	rows, err := database.DB.Query(query, args...)
 	if err != nil {
