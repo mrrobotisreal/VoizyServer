@@ -90,6 +90,8 @@ func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPosts
 }
 
 func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (models.GetRecommendedFeedResponse, error) {
+	log.Println("recommendedPosts: ", recommendedPosts)
+	log.Println("recommendedPosts length: ", len(recommendedPosts))
 	offset := (page - 1) * limit
 	placeholders := make([]string, len(recommendedPosts))
 	args := make([]interface{}, len(recommendedPosts))
