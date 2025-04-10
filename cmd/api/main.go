@@ -84,15 +84,15 @@ func main() {
 	/// AUTH
 	// http.HandleFunc("/api/keys/insert", authHandlers.InsertApiKeyHandler)
 
-	certFile := "/etc/letsencrypt/live/voizy.me/fullchain.pem"
-	keyFile := "/etc/letsencrypt/live/voizy.me/privkey.pem"
-
-	fmt.Println("Server running securely on localhost:443")
-	if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
-		log.Fatal(err)
-	}
-	//fmt.Println("Server running securely on localhost:9295")
-	//if err := http.ListenAndServe(":9295", nil); err != nil {
+	//certFile := "/etc/letsencrypt/live/voizy.me/fullchain.pem"
+	//keyFile := "/etc/letsencrypt/live/voizy.me/privkey.pem"
+	//
+	//fmt.Println("Server running securely on localhost:443")
+	//if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
 	//	log.Fatal(err)
 	//}
+	fmt.Println("Server running securely on localhost:9295")
+	if err := http.ListenAndServe(":9295", nil); err != nil {
+		log.Fatal(err)
+	}
 }

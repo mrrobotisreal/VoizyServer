@@ -3,7 +3,7 @@ package models
 import "time"
 
 type ScoredPost struct {
-	PostID string  `json:"post_id"`
+	PostID int64   `json:"post_id"`
 	Score  float64 `json:"score"`
 }
 

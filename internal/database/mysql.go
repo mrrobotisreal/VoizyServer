@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+
+	"github.com/go-sql-driver/mysql"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -13,7 +14,7 @@ import (
 var DB *sql.DB
 
 func InitMySQL() error {
-	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/voizy?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DBU"), os.Getenv("DBP"))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/voizy?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DBU"), os.Getenv("DBP"), os.Getenv("DBH"))
 	var err error
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {

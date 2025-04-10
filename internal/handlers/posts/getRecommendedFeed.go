@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -26,6 +27,7 @@ func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 
 	recommendedPostsResponse, err := fetchRecommendations(userIDStr, limitStr, excludeSeenStr)
 	if err != nil {
+		log.Println("Failed to fetch recommended posts due to the following error: ", err)
 		http.Error(w, "Failed to fetch recommended posts", http.StatusInternalServerError)
 		return
 	}
@@ -49,7 +51,8 @@ func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPostsResponse, error) {
-	baseURL := `http://localhost:5000/api/recommendations`
+	baseURL := fmt.Sprintf("%s:%s", os.Getenv("RECOMMENDATIONS_SERVICE_HOST"), os.Getenv("RECOMMENDATIONS_SERVICE_PORT"))
+	// baseURL := `http://192.168.4.74:5000/api/recommendations`
 
 	params := url.Values{}
 	params.Add("user_id", userID)
