@@ -92,6 +92,11 @@ func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPosts
 func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (models.GetRecommendedFeedResponse, error) {
 	log.Println("recommendedPosts: ", recommendedPosts)
 	log.Println("recommendedPosts length: ", len(recommendedPosts))
+
+	if len(recommendedPosts) == 0 {
+		return models.GetRecommendedFeedResponse{}, nil
+	}
+
 	offset := (page - 1) * limit
 	placeholders := make([]string, len(recommendedPosts))
 	args := make([]interface{}, len(recommendedPosts))
@@ -137,8 +142,6 @@ func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (model
 		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
 	`
-	log.Println("query: ", query)
-	log.Println("args: ", args)
 
 	rows, err := database.DB.Query(query, args...)
 	if err != nil {
