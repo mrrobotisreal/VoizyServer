@@ -32,6 +32,13 @@ func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		log.Println("Failed to convert userIDString (string) to userID (in64): ", err)
+		http.Error(w, "Failed to convert param 'id'.", http.StatusInternalServerError)
+		return
+	}
+
 	limit, err := strconv.ParseInt(limitStr, 10, 64)
 	if err != nil {
 		log.Println("Failed to convert limitString (string) to limit (int64): ", err)
@@ -39,7 +46,7 @@ func GetRecommendedFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := getPostInfo(recommendedPostsResponse.Recommendations, limit, 1)
+	response, err := getPostInfo(recommendedPostsResponse.Recommendations, userID, limit, 1)
 	if err != nil {
 		log.Println("Failed to get posts info due to the following error: ", err)
 		http.Error(w, "Failed to get recommended feed posts.", http.StatusInternalServerError)
@@ -89,7 +96,7 @@ func fetchRecommendations(userID, limit, excludeSeen string) (models.ScoredPosts
 	return fetchRecommendationsResponse, nil
 }
 
-func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (models.GetRecommendedFeedResponse, error) {
+func getPostInfo(recommendedPosts []models.ScoredPost, userID, limit, page int64) (models.GetRecommendedFeedResponse, error) {
 	log.Println("recommendedPosts: ", recommendedPosts)
 	log.Println("recommendedPosts length: ", len(recommendedPosts))
 
@@ -103,10 +110,11 @@ func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (model
 
 	offset := (page - 1) * limit
 	placeholders := make([]string, len(recommendedPosts))
-	args := make([]interface{}, len(recommendedPosts))
+	args := make([]interface{}, len(recommendedPosts)+1)
+	args[0] = userID
 	for i, id := range recommendedPosts {
 		placeholders[i] = "?"
-		args[i] = id.PostID
+		args[i+1] = id.PostID
 	}
 	args = append(args, limit, offset)
 
@@ -141,7 +149,7 @@ func getPostInfo(recommendedPosts []models.ScoredPost, limit, page int64) (model
 		LEFT JOIN users u ON p.user_id = u.user_id
 		LEFT JOIN user_profiles up ON p.user_id = up.user_id
 		LEFT JOIN user_images ui ON p.user_id = ui.user_id
-		LEFT JOIN post_reactions pr_user ON p.post_id = pr_user.post_id
+		LEFT JOIN post_reactions pr_user ON p.post_id = pr_user.post_id AND pr_user.user_id = ?
 		WHERE p.post_id IN (` + strings.Join(placeholders, ",") + `)
 		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
