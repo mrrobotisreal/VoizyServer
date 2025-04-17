@@ -156,7 +156,7 @@ func getPopularPostsInfo(popularPosts []int64, userID, limit, days, page int64) 
 		LEFT JOIN user_images ui ON p.user_id = ui.user_id
 		LEFT JOIN post_reactions pr_user ON p.post_id = pr_user.post_id AND pr_user.user_id = ?
 		WHERE p.post_id IN (` + strings.Join(placeholders, ",") + `)
-		ORDER BY p.created_at DESC
+		ORDER BY p.views DESC
 		LIMIT ? OFFSET ?
 	`
 
