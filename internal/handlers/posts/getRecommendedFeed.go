@@ -125,7 +125,7 @@ func getPostInfo(recommendedPosts []models.ScoredPost, userID, limit, page int64
 			p.to_user_id,
 			p.original_post_id,
 			p.impressions,
-			p.views,
+			(SELECT COUNT(*) FROM post_views pv WHERE pv.post_id = p.post_id) AS views,
 			p.content_text,
 			p.created_at,
 			p.updated_at,
