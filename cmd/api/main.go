@@ -72,6 +72,7 @@ func main() {
 	http.HandleFunc("/posts/feed/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListFeedHandler))
 	http.HandleFunc("/posts/feed/recommended/get", middleware.ValidateAPIKeyMiddleware(postHandlers.GetRecommendedFeed))
 	http.HandleFunc("/posts/feed/popular/get", middleware.ValidateAPIKeyMiddleware(postHandlers.GetPopularPosts))
+	http.HandleFunc("/posts/feed/friends/get", middleware.ValidateAPIKeyMiddleware(postHandlers.GetFriendFeed))
 	//http.HandleFunc("/posts/feed/recommended/list", middleware.ValidateAPIKeyMiddleware(postHandlers.ListRecommendedFeedHandler))
 	// Impressions and Views
 	http.HandleFunc("/posts/impressions/put", middleware.ValidateAPIKeyMiddleware(postHandlers.PutPostImpressionHandler))
