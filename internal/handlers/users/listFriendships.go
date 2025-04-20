@@ -75,9 +75,9 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 	countQuery := `
 		SELECT COUNT(*)
 		FROM friendships
-		WHERE user_id = ?
+		WHERE user_id = ? OR friend_id = ?
 	`
-	err := database.DB.QueryRow(countQuery, userID).Scan(&totalFriends)
+	err := database.DB.QueryRow(countQuery, userID, userID).Scan(&totalFriends)
 	if err != nil {
 		return models.ListFriendshipsResponse{}, fmt.Errorf("failed to get totalFriends: %w", err)
 	}
@@ -105,12 +105,12 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 		LEFT JOIN user_images ui
 			ON ui.user_id = f.friend_id
 			AND ui.is_profile_pic = 1
-		WHERE f.user_id = ?
-			AND f.status = 'accepted'
+		WHERE f.status = 'accepted'
+			AND (f.user_id = ? OR f.friend_id = ?)
 		ORDER BY f.created_at DESC
 		LIMIT ? OFFSET ?
 	`
-	rows, err := database.DB.Query(selectQuery, userID, limit, offset)
+	rows, err := database.DB.Query(selectQuery, userID, userID, limit, offset)
 	if err != nil {
 		return models.ListFriendshipsResponse{}, err
 	}
