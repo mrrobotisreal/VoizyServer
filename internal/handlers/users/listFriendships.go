@@ -82,35 +82,80 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 		return models.ListFriendshipsResponse{}, fmt.Errorf("failed to get totalFriends: %w", err)
 	}
 
+	//selectQuery := `
+	//	SELECT
+	//		f.friendship_id,
+	//		f.user_id,
+	//		f.friend_id,
+	//		f.status,
+	//		f.created_at,
+	//
+	//		u.username AS friend_username,
+	//
+	//		up.first_name,
+	//		up.last_name,
+	//		up.preferred_name,
+	//
+	//		ui.image_url AS profile_pic_url
+	//	FROM friendships f
+	//	LEFT JOIN users u
+	//		ON u.user_id = f.friend_id
+	//	LEFT JOIN user_profiles up
+	//		ON up.user_id = f.friend_id
+	//	LEFT JOIN user_images ui
+	//		ON ui.user_id = f.friend_id
+	//		AND ui.is_profile_pic = 1
+	//	WHERE f.status = 'accepted'
+	//		AND (f.user_id = ? OR f.friend_id = ?)
+	//	ORDER BY f.created_at DESC
+	//	LIMIT ? OFFSET ?
+	//`
+	//rows, err := database.DB.Query(selectQuery, userID, userID, limit, offset)
 	selectQuery := `
+	  SELECT
+		fq.friendship_id,
+		fq.user_id,
+		fq.friend_id,
+		fq.status,
+		fq.created_at,
+	
+		u.username         AS friend_username,
+		up.first_name,
+		up.last_name,
+		up.preferred_name,
+		ui.image_url       AS profile_pic_url
+	
+	  FROM (
 		SELECT
-			f.friendship_id,
-			f.user_id,
-			f.friend_id,
-			f.status,
-			f.created_at,
-			
-			u.username AS friend_username,
-			
-			up.first_name,
-			up.last_name,
-			up.preferred_name,
-			
-			ui.image_url AS profile_pic_url
+		  f.*,
+		  CASE
+			WHEN f.user_id   = ? THEN f.friend_id
+			ELSE f.user_id
+		  END                    AS friend_user_id
 		FROM friendships f
-		LEFT JOIN users u
-			ON u.user_id = f.friend_id
-		LEFT JOIN user_profiles up
-			ON up.user_id = f.friend_id
-		LEFT JOIN user_images ui
-			ON ui.user_id = f.friend_id
-			AND ui.is_profile_pic = 1
 		WHERE f.status = 'accepted'
-			AND (f.user_id = ? OR f.friend_id = ?)
-		ORDER BY f.created_at DESC
-		LIMIT ? OFFSET ?
+		  AND (f.user_id   = ? 
+			OR f.friend_id = ?)
+	  ) AS fq
+	
+	  LEFT JOIN users u
+		ON u.user_id = fq.friend_user_id
+	
+	  LEFT JOIN user_profiles up
+		ON up.user_id = fq.friend_user_id
+	
+	  LEFT JOIN user_images ui
+		ON ui.user_id      = fq.friend_user_id
+	   AND ui.is_profile_pic = 1
+	
+	  ORDER BY fq.created_at DESC
+	  LIMIT  ? OFFSET ?
 	`
-	rows, err := database.DB.Query(selectQuery, userID, userID, limit, offset)
+	rows, err := database.DB.Query(
+		selectQuery,
+		userID, userID, userID,
+		limit, offset,
+	)
 	if err != nil {
 		return models.ListFriendshipsResponse{}, err
 	}
