@@ -376,6 +376,13 @@ func createTables() error {
 	// Indexes
 	indexQueries := []string{
 		`CREATE INDEX idx_post_views_post_id ON post_views(post_id);`,
+		`CREATE INDEX idx_friendships_user_status ON friendships (user_id, status);`,
+		`CREATE INDEX idx_friendships_friend_status ON friendships (friend_id, status);`,
+		`CREATE INDEX idx_posts_user_id ON posts (user_id);`,
+		`CREATE INDEX idx_post_reactions_post_id ON post_reactions (post_id);`,
+		`CREATE INDEX idx_post_reactions_user_id ON post_reactions (user_id);`,
+		`CREATE INDEX idx_user_profiles_user_id ON user_profiles (user_id);`,
+		`CREATE INDEX idx_user_images_profile_pic ON user_images (user_id, is_profile_pic);`,
 	}
 
 	if _, err := DB.Exec(apiKeysTable); err != nil {

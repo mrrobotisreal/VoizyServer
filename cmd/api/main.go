@@ -50,6 +50,8 @@ func main() {
 	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
 	http.HandleFunc("/users/friends/list/common", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendsInCommonHandler))
 	http.HandleFunc("/users/friends/get/total", middleware.ValidateAPIKeyMiddleware(userHandlers.GetTotalFriendsHandler))
+	// People
+	http.HandleFunc("/users/friends/people/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListPeopleYouMayKnow))
 
 	/// POSTS ///
 	// Posts
