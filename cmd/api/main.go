@@ -56,6 +56,7 @@ func main() {
 	http.HandleFunc("/users/friends/get/status", middleware.ValidateAPIKeyMiddleware(userHandlers.GetFriendStatus))
 	// People
 	http.HandleFunc("/users/friends/people/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListPeopleYouMayKnow))
+	http.HandleFunc("/users/people/search", middleware.ValidateAPIKeyMiddleware(userHandlers.SearchPeople))
 
 	/// POSTS ///
 	// Posts
