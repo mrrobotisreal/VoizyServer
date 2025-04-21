@@ -168,16 +168,15 @@ func search(searchQuery string, userID, limit, page int64) (models.SearchPeopleR
     ORDER BY category ASC, match_rank ASC
     LIMIT ? OFFSET ?;`
 
-	// Build our args slice in the correct order:
 	args := []interface{}{
-		userID,                   // direct_friends CTE
-		userID,                   // direct_friends filter
-		userID,                   // user_city_parts
-		userID,                   // exclude yourself from matches
-		searchQuery, searchQuery, // username, first_name
-		searchQuery, searchQuery, // last_name, preferred_name
-		searchQuery, searchQuery, // fn_ln, pn_ln
-		searchQuery, searchQuery, // rest of INSTRs (5 more)
+		userID,
+		userID,
+		userID,
+		userID,
+		searchQuery, searchQuery,
+		searchQuery, searchQuery,
+		searchQuery, searchQuery,
+		searchQuery, searchQuery,
 		searchQuery, searchQuery,
 		searchQuery, searchQuery,
 		limit, offset,

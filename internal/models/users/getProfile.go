@@ -14,5 +14,5 @@ type GetUserProfileResponse struct {
 	CityOfResidence *string    `json:"cityOfResidence"`
 	PlaceOfWork     *string    `json:"placeOfWork"`
 	DateJoined      *time.Time `json:"dateJoined"`
-	Username				*string    `json:"username"`
+	Username        *string    `json:"username"`
 }
