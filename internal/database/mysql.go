@@ -137,6 +137,25 @@ func createTables() error {
 		FOREIGN KEY (song_id) REFERENCES songs(song_id) ON DELETE CASCADE
 	);`
 
+	userPreferencesTable := `
+	CREATE TABLE IF NOT EXISTS user_preferences (
+		user_preferences_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
+		user_id                  BIGINT NOT NULL,
+		primary_color            VARCHAR(32) NOT NULL DEFAULT 'yellow',
+		primary_accent           VARCHAR(32) NOT NULL DEFAULT 'pale-yellow',
+		secondary_color          VARCHAR(32) NOT NULL DEFAULT 'magenta',
+		secondary_accent         VARCHAR(32) NOT NULL DEFAULT 'pale-magenta',
+	    song_autoplay            BOOLEAN NOT NULL DEFAULT 0,
+		profile_primary_color    VARCHAR(32) NOT NULL DEFAULT 'yellow',
+		profile_primary_accent   VARCHAR(32) NOT NULL DEFAULT 'pale-yellow',
+		profile_secondary_color  VARCHAR(32) NOT NULL DEFAULT 'magenta',
+		profile_secondary_accent VARCHAR(32) NOT NULL DEFAULT 'pale-magenta',
+		profile_song_autoplay    BOOLEAN NOT NULL DEFAULT 0,
+		updated_at	             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id)    REFERENCES users(user_id) ON DELETE CASCADE
+	);
+	`
+
 	// Friendships
 	friendshipsTable := `
 	CREATE TABLE IF NOT EXISTS friendships (
@@ -383,6 +402,7 @@ func createTables() error {
 		`CREATE INDEX idx_post_reactions_user_id ON post_reactions (user_id);`,
 		`CREATE INDEX idx_user_profiles_user_id ON user_profiles (user_id);`,
 		`CREATE INDEX idx_user_images_profile_pic ON user_images (user_id, is_profile_pic);`,
+		`CREATE UNIQUE INDEX uq_user_preferences_user_id ON user_preferences (user_id);`,
 	}
 
 	if _, err := DB.Exec(apiKeysTable); err != nil {
@@ -413,6 +433,9 @@ func createTables() error {
 		return err
 	}
 	if _, err := DB.Exec(userSongsTable); err != nil {
+		return err
+	}
+	if _, err := DB.Exec(userPreferencesTable); err != nil {
 		return err
 	}
 	if _, err := DB.Exec(friendshipsTable); err != nil {

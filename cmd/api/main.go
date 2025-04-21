@@ -45,6 +45,9 @@ func main() {
 	http.HandleFunc("/users/images/coverPic/update", middleware.CombinedAuthMiddleware(userHandlers.UpdateCoverPicHandler))
 	http.HandleFunc("/users/images/put", middleware.CombinedAuthMiddleware(userHandlers.PutUserImagesHandler))
 	http.HandleFunc("/users/images/batch/get/presigned", middleware.CombinedAuthMiddleware(userHandlers.GetBatchUserImagesPresignedPutUrlsHandler))
+	// User Preferences
+	http.HandleFunc("/users/preferences/put", middleware.CombinedAuthMiddleware(userHandlers.PutUserPreferences))
+	http.HandleFunc("/users/preferences/get", middleware.ValidateAPIKeyMiddleware(userHandlers.GetUserPreferences))
 	// Friendships
 	http.HandleFunc("/users/friends/create", middleware.CombinedAuthMiddleware(userHandlers.CreateFriendRequestHandler))
 	http.HandleFunc("/users/friends/list", middleware.ValidateAPIKeyMiddleware(userHandlers.ListFriendshipsHandler))
