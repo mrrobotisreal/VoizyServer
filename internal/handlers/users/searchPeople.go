@@ -4,6 +4,7 @@ import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
 	"VoizyServer/internal/util"
+	sql2 "database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -185,7 +186,7 @@ func search(searchQuery string, userID, limit, page int64) (models.SearchPeopleR
 	for rows.Next() {
 		var (
 			p                                            models.SearchPerson
-			uname, fn, ln, pn, picURL, city, friendsJSON sql.NullString
+			uname, fn, ln, pn, picURL, city, friendsJSON sql2.NullString
 		)
 
 		if err := rows.Scan(
