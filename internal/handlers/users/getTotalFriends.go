@@ -44,7 +44,8 @@ func getTotalFriends(userID int64) (models.GetTotalFriendsResponse, error) {
 	query := `
 		SELECT COUNT(*)
 		FROM friendships
-		WHERE user_id = ? OR friend_id = ?
+		WHERE status = 'accepted'
+		    AND (user_id = ? OR friend_id = ?)
 	`
 	row := database.DB.QueryRow(query, userID, userID)
 	err := row.Scan(
