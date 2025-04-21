@@ -177,7 +177,6 @@ func search(searchQuery string, userID, limit, page int64) (models.SearchPeopleR
 		searchQuery, searchQuery, // username, first_name
 		searchQuery, searchQuery, // last_name, preferred_name
 		searchQuery, searchQuery, // fn_ln, pn_ln
-		searchQuery,              // first INSTR
 		searchQuery, searchQuery, // rest of INSTRs (5 more)
 		searchQuery, searchQuery,
 		searchQuery, searchQuery,
