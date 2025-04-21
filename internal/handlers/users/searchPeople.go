@@ -120,8 +120,16 @@ func search(searchQuery string, userID, limit, page int64) (models.SearchPeopleR
             OR LOWER(up.first_name)     LIKE CONCAT('%', LOWER(?), '%')
             OR LOWER(up.last_name)      LIKE CONCAT('%', LOWER(?), '%')
             OR LOWER(up.preferred_name) LIKE CONCAT('%', LOWER(?), '%')
-            OR LOWER(fn_ln)             LIKE CONCAT('%', LOWER(?), '%')
-            OR LOWER(pn_ln)             LIKE CONCAT('%', LOWER(?), '%')
+            OR LOWER(CONCAT_WS(' ',
+               COALESCE(up.first_name, ''),
+               COALESCE(up.last_name, '')
+           ))
+           LIKE CONCAT('%', LOWER(?), '%')
+           OR LOWER(CONCAT_WS(' ',
+               COALESCE(up.preferred_name, ''),
+               COALESCE(up.last_name, '')
+           ))
+           LIKE CONCAT('%', LOWER(?), '%')
           )
       )
     SELECT
