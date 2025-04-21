@@ -3,6 +3,7 @@ package handlers
 import (
 	database "VoizyServer/internal/database"
 	models "VoizyServer/internal/models/users"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -43,6 +44,10 @@ func getProfilePic(userID int64) (models.GetProfilePicResponse, error) {
 	query := `SELECT image_url FROM user_images WHERE user_id = ? AND is_profile_pic = 1 LIMIT 1`
 	err := database.DB.QueryRow(query, userID).Scan(&response.ProfilePicURL)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			response.ProfilePicURL = ""
+			return response, nil
+		}
 		return models.GetProfilePicResponse{}, err
 	}
 
