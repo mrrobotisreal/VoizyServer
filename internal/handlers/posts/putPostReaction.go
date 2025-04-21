@@ -4,6 +4,7 @@ import (
 	"VoizyServer/internal/database"
 	models "VoizyServer/internal/models/posts"
 	"VoizyServer/internal/util"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -40,24 +41,98 @@ func PutPostReactionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func putPostReaction(req models.PutReactionRequest) (models.PutReactionResponse, error) {
-	query := `
-		INSERT INTO post_reactions
-		(post_id, user_id, reaction_type)
-		VALUES
-		(?, ?, ?)
-	`
-	result, err := database.DB.Exec(query, req.PostID, req.UserID, req.ReactionType)
+	var (
+		existingID   int64
+		existingType string
+	)
+
+	err := database.DB.
+		QueryRow(`SELECT reaction_id, reaction_type
+                  FROM post_reactions
+                  WHERE post_id = ? AND user_id = ?`,
+			req.PostID, req.UserID).
+		Scan(&existingID, &existingType)
+	if err != nil && err != sql.ErrNoRows {
+		return models.PutReactionResponse{
+			Success: false,
+			Message: fmt.Sprintf("error checking existing reaction: %v", err),
+		}, err
+	}
+
+	if err == sql.ErrNoRows {
+		res, err := database.DB.Exec(
+			`INSERT INTO post_reactions (post_id, user_id, reaction_type)
+             VALUES (?, ?, ?)`,
+			req.PostID, req.UserID, req.ReactionType,
+		)
+		if err != nil {
+			return models.PutReactionResponse{
+				Success: false,
+				Message: fmt.Sprintf("error inserting reaction: %v", err),
+			}, err
+		}
+		newID, _ := res.LastInsertId()
+		return models.PutReactionResponse{
+			Success:    true,
+			Message:    "Reaction added",
+			ReactionID: newID,
+		}, nil
+	}
+
+	if existingType == req.ReactionType {
+		_, err := database.DB.Exec(
+			`DELETE FROM post_reactions WHERE reaction_id = ?`,
+			existingID,
+		)
+		if err != nil {
+			return models.PutReactionResponse{
+				Success: false,
+				Message: fmt.Sprintf("error removing reaction: %v", err),
+			}, err
+		}
+		return models.PutReactionResponse{
+			Success:    true,
+			Message:    "Reaction removed",
+			ReactionID: existingID,
+		}, nil
+	}
+
+	_, err = database.DB.Exec(
+		`UPDATE post_reactions
+         SET reaction_type = ?
+         WHERE reaction_id = ?`,
+		req.ReactionType, existingID,
+	)
 	if err != nil {
 		return models.PutReactionResponse{
 			Success: false,
-			Message: fmt.Sprintf("Failed to execute query due to the following error: %v", err),
+			Message: fmt.Sprintf("error updating reaction: %v", err),
 		}, err
 	}
-	reactionID, _ := result.LastInsertId()
-
 	return models.PutReactionResponse{
 		Success:    true,
-		Message:    "Successfully put reaction on post",
-		ReactionID: reactionID,
+		Message:    "Reaction updated",
+		ReactionID: existingID,
 	}, nil
+
+	//query := `
+	//	INSERT INTO post_reactions
+	//	(post_id, user_id, reaction_type)
+	//	VALUES
+	//	(?, ?, ?)
+	//`
+	//result, err := database.DB.Exec(query, req.PostID, req.UserID, req.ReactionType)
+	//if err != nil {
+	//	return models.PutReactionResponse{
+	//		Success: false,
+	//		Message: fmt.Sprintf("Failed to execute query due to the following error: %v", err),
+	//	}, err
+	//}
+	//reactionID, _ := result.LastInsertId()
+	//
+	//return models.PutReactionResponse{
+	//	Success:    true,
+	//	Message:    "Successfully put reaction on post",
+	//	ReactionID: reactionID,
+	//}, nil
 }
