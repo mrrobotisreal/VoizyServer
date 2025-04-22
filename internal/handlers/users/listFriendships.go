@@ -164,12 +164,13 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 	var friends []models.ListFriendship
 	for rows.Next() {
 		var f models.ListFriendship
+		var uid, fid int64
 		var friendUsername, firstName, lastName, preferredName, profilePicURL, status sql.NullString
 		var createdAt sql.NullTime
 		err := rows.Scan(
 			&f.FriendshipID,
-			&f.UserID,
-			&f.FriendID,
+			&uid,
+			&fid,
 			&status,
 			&createdAt,
 			&friendUsername,
@@ -181,6 +182,14 @@ func listFriendships(userID, limit, page int64) (models.ListFriendshipsResponse,
 		if err != nil {
 			log.Println("Scan rows error: ", err)
 			continue
+		}
+		if uid == userID {
+			f.FriendID = uid
+			f.UserID = fid
+		}
+		if uid != userID {
+			f.FriendID = fid
+			f.UserID = uid
 		}
 		f.Status = util.SqlNullStringToPtr(status)
 		f.CreatedAt = util.SqlNullTimeToPtr(createdAt)

@@ -47,7 +47,7 @@ func putPostReaction(req models.PutReactionRequest) (models.PutReactionResponse,
 	)
 
 	err := database.DB.
-		QueryRow(`SELECT reaction_id, reaction_type
+		QueryRow(`SELECT post_reaction_id, reaction_type
                   FROM post_reactions
                   WHERE post_id = ? AND user_id = ?`,
 			req.PostID, req.UserID).
@@ -81,7 +81,7 @@ func putPostReaction(req models.PutReactionRequest) (models.PutReactionResponse,
 
 	if existingType == req.ReactionType {
 		_, err := database.DB.Exec(
-			`DELETE FROM post_reactions WHERE reaction_id = ?`,
+			`DELETE FROM post_reactions WHERE post_reaction_id = ?`,
 			existingID,
 		)
 		if err != nil {
@@ -100,7 +100,7 @@ func putPostReaction(req models.PutReactionRequest) (models.PutReactionResponse,
 	_, err = database.DB.Exec(
 		`UPDATE post_reactions
          SET reaction_type = ?
-         WHERE reaction_id = ?`,
+         WHERE post_reaction_id = ?`,
 		req.ReactionType, existingID,
 	)
 	if err != nil {
