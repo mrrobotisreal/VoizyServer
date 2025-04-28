@@ -68,7 +68,7 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 		return models.LoginResponse{}, err
 	}
 
-	_, err = firebase.AuthClient.VerifyIDToken(ctx, signIn.IDToken)
+	idToken, err := firebase.AuthClient.VerifyIDToken(ctx, signIn.IDToken)
 	if err != nil {
 		return models.LoginResponse{}, err
 	}
@@ -118,6 +118,16 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 	}
 	user.FBUID = util.SqlNullStringToPtr(fbuid)
 	user.Phone = util.SqlNullStringToPtr(phone)
+
+	if user.FBUID == nil {
+		updateQuery := `
+			UPDATE users SET fb_uid = ? WHERE user_id = ?;
+		`
+		_, err := database.DB.Exec(updateQuery, idToken.UID, user.UserID)
+		if err != nil {
+			log.Println("Error updating fb_uid: %v", err)
+		}
+	}
 
 	log.Println("What is userID? ", user.UserID)
 	//isPasswordCorrect := util.CheckPasswordHash(req.Password+user.Salt, user.PasswordHash)
