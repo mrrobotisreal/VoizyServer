@@ -2,6 +2,7 @@ package main
 
 import (
 	"VoizyServer/internal/database"
+	"VoizyServer/internal/database/firebase"
 	analyticsHandlers "VoizyServer/internal/handlers/analytics"
 	authHandlers "VoizyServer/internal/handlers/auth"
 	postHandlers "VoizyServer/internal/handlers/posts"
@@ -17,6 +18,8 @@ func main() {
 		log.Fatalf("Failed to init MySQL: %v", err)
 	}
 	defer database.DB.Close()
+
+	firebase.Init()
 
 	//if err := database.InitRedis(); err != nil {
 	//	log.Fatalf("Failed to init Redis: %v", err)
