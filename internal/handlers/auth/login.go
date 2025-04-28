@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"VoizyServer/internal/database"
+	"VoizyServer/internal/database/firebase"
 	models "VoizyServer/internal/models/auth"
 	"VoizyServer/internal/util"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -54,21 +56,38 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(req models.LoginRequest) (models.LoginResponse, error) {
+	ctx := context.Background()
+
+	email := req.Email
+	if email == "" {
+		email = lookupEmailByUsername(req.Username)
+	}
+
+	signIn, err := firebase.SignInWithEmail(ctx, email, req.Password)
+	if err != nil {
+		return models.LoginResponse{}, err
+	}
+
+	_, err = firebase.AuthClient.VerifyIDToken(ctx, signIn.IDToken)
+	if err != nil {
+		return models.LoginResponse{}, err
+	}
+
 	var user models.User
 	var query string
 	var arg string
 
-	if req.Email != "" {
+	if email != "" {
 		query = `
-			SELECT user_id, email, username, password_hash, salt, api_key, created_at, updated_at
+			SELECT user_id, fb_uid, email, phone, username, password_hash, salt, api_key, created_at, updated_at
 			FROM users
 			WHERE email = ?
 			LIMIT 1;
 		`
-		arg = req.Email
+		arg = email
 	} else {
 		query = `
-			SELECT user_id, email, username, password_hash, salt, api_key, created_at, updated_at
+			SELECT user_id, fb_uid, email, phone, username, password_hash, salt, api_key, created_at, updated_at
 			FROM users
 			WHERE username = ?
 			LIMIT 1;
@@ -76,10 +95,14 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 		arg = req.Username
 	}
 
+	var fbuid sql.NullString
+	var phone sql.NullString
 	row := database.DB.QueryRow(query, arg)
-	err := row.Scan(
+	err = row.Scan(
 		&user.UserID,
+		&fbuid,
 		&user.Email,
+		&phone,
 		&user.Username,
 		&user.PasswordHash,
 		&user.Salt,
@@ -93,6 +116,8 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 		}
 		return models.LoginResponse{}, err
 	}
+	user.FBUID = util.SqlNullStringToPtr(fbuid)
+	user.Phone = util.SqlNullStringToPtr(phone)
 
 	log.Println("What is userID? ", user.UserID)
 	isPasswordCorrect := util.CheckPasswordHash(req.Password+user.Salt, user.PasswordHash)
@@ -105,11 +130,23 @@ func login(req models.LoginRequest) (models.LoginResponse, error) {
 	return models.LoginResponse{
 		IsPasswordCorrect: isPasswordCorrect,
 		UserID:            user.UserID,
+		FBUID:             user.FBUID,
 		APIKey:            user.APIKey,
 		Token:             token,
 		Email:             user.Email,
+		Phone:             user.Phone,
 		Username:          user.Username,
 		CreatedAt:         user.CreatedAt,
 		UpdatedAt:         user.UpdatedAt,
 	}, nil
+}
+
+func lookupEmailByUsername(username string) string {
+	var email string
+	query := `
+		SELECT email FROM users WHERE username = ?;
+	`
+	_ = database.DB.QueryRow(query, username).Scan(&email)
+
+	return email
 }

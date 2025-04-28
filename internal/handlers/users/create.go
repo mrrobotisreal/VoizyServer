@@ -2,8 +2,13 @@ package handlers
 
 import (
 	"VoizyServer/internal/database"
+	"VoizyServer/internal/database/firebase"
 	models "VoizyServer/internal/models/users"
 	"VoizyServer/internal/util"
+	"context"
+	"firebase.google.com/go/v4/auth"
+	"fmt"
+
 	//"context"
 	"encoding/json"
 	//"fmt"
@@ -45,28 +50,39 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error) {
-	// TODO: update this to use Tx and do rollbacks upon any failures
-	salt, err := util.GenerateSalt(10)
-	if err != nil {
-		log.Println("Error generating salt: ", err)
-		return models.CreateUserResponse{}, err
-	}
+	ctx := context.Background()
 
-	hashedPassword, err := util.HashPassword(req.Password + salt)
+	params := (&auth.UserToCreate{}).Email(req.Email).Password(req.Password).DisplayName(req.PreferredName)
+
+	u, err := firebase.AuthClient.CreateUser(ctx, params)
 	if err != nil {
-		log.Println("Error hashing password: ", err)
 		return models.CreateUserResponse{}, err
 	}
+	fmt.Println("Firebase UID = ", u.UID)
 
 	apiKey, err := util.GenerateSecureAPIKey()
 	if err != nil {
 		log.Println("Error generating API key: ", err)
 		return models.CreateUserResponse{}, err
 	}
+	//fbToken, _ := util.GenerateAndStoreJWT(u.UID, "always")
+
+	// TODO: update this to use Tx and do rollbacks upon any failures
+	//salt, err := util.GenerateSalt(10)
+	//if err != nil {
+	//	log.Println("Error generating salt: ", err)
+	//	return models.CreateUserResponse{}, err
+	//}
+
+	//hashedPassword, err := util.HashPassword(req.Password + salt)
+	//if err != nil {
+	//	log.Println("Error hashing password: ", err)
+	//	return models.CreateUserResponse{}, err
+	//}
 
 	currentTime := time.Now().UTC()
-	userQuery := `INSERT INTO users (email, api_key, salt, password_hash, username, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	userResult, err := database.DB.Exec(userQuery, req.Email, apiKey.Key, salt, hashedPassword, req.Username, currentTime, currentTime)
+	userQuery := `INSERT INTO users (fb_uid, email, api_key, salt, password_hash, username, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	userResult, err := database.DB.Exec(userQuery, u.UID, req.Email, apiKey.Key, "", "", req.Username, currentTime, currentTime)
 	if err != nil {
 		log.Println("CreateUserHandler - DB error: ", err)
 		return models.CreateUserResponse{}, err
@@ -114,10 +130,12 @@ func createUser(req models.CreateUserRequest) (models.CreateUserResponse, error)
 
 	return models.CreateUserResponse{
 		UserID:        userID,
+		FBUID:         u.UID,
 		ProfileID:     profileID,
 		APIKey:        apiKey.Key,
 		Token:         token,
 		Email:         req.Email,
+		Phone:         "",
 		Username:      req.Username,
 		PreferredName: req.PreferredName,
 		FirstName:     req.PreferredName,

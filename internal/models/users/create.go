@@ -11,10 +11,12 @@ type CreateUserRequest struct {
 
 type CreateUserResponse struct {
 	UserID          int64     `json:"userID"`
+	FBUID           string    `json:"FBUID"`
 	ProfileID       int64     `json:"profileID"`
 	APIKey          string    `json:"apiKey"`
 	Token           string    `json:"token"`
 	Email           string    `json:"email"`
+	Phone           string    `json:"phone"`
 	Username        string    `json:"username"`
 	PreferredName   string    `json:"preferredName"`
 	FirstName       string    `json:"firstName"`
